@@ -1,0 +1,22 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { withTransaction } from '../../database/connection.js';
+import { AppError, assertFound } from '../../utils/errors.js';
+import { roleRepository } from './role.repository.js';
+
+export const roleRoutes = Router();
+roleRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+roleRoutes.get('/', asyncHandler(async (req, res) => success(res, await roleRepository.roles())));
+roleRoutes.post('/', validate(z.object({ name: z.string().trim().min(2).max(50) })), asyncHandler(async (req, res) => success(res, await roleRepository.create(req.body.name), 201)));
+roleRoutes.get('/permissions', asyncHandler(async (req, res) => success(res, await roleRepository.permissions())));
+roleRoutes.get('/:id', asyncHandler(async (req, res) => success(res, assertFound(await roleRepository.role(req.params.id), 'Role not found'))));
+roleRoutes.patch('/:id', validate(z.object({ name: z.string().trim().min(2).max(50) })), asyncHandler(async (req, res) => { const role = assertFound(await roleRepository.role(req.params.id), 'Role not found'); if (['Owner', 'Admin'].includes(role.name)) throw new AppError('System roles cannot be renamed', 409, 'PROTECTED_ROLE'); return success(res, await roleRepository.update(req.params.id, req.body.name)); }));
+roleRoutes.delete('/:id', asyncHandler(async (req, res) => { if (!(await roleRepository.delete(req.params.id))) throw new AppError('Role is protected or assigned to users', 409, 'ROLE_NOT_DELETABLE'); return success(res, null); }));
+roleRoutes.get('/:id/permissions', asyncHandler(async (req, res) => success(res, await roleRepository.rolePermissions(req.params.id))));
+roleRoutes.put('/:id/permissions', validate(z.object({ permissionIds: z.array(z.coerce.number().int().positive()) })), asyncHandler(async (req, res) => success(res, await withTransaction((connection) => roleRepository.replacePermissions(req.params.id, req.body.permissionIds, connection)))));

@@ -1,0 +1,36 @@
+CREATE TABLE products (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  business_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(160) NOT NULL,
+  slug VARCHAR(160) NOT NULL,
+  description TEXT NULL,
+  price DECIMAL(12,2) NOT NULL,
+  sale_price DECIMAL(12,2) NULL,
+  sku VARCHAR(80) NULL,
+  status ENUM('draft', 'published', 'archived') NOT NULL DEFAULT 'draft',
+  version INT UNSIGNED NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_product_slug_tenant (business_id, slug),
+  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+);
+CREATE TABLE inventory (
+  product_id BIGINT UNSIGNED NOT NULL,
+  business_id BIGINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL DEFAULT 0,
+  reserved_quantity INT NOT NULL DEFAULT 0,
+  version INT UNSIGNED NOT NULL DEFAULT 1,
+  PRIMARY KEY (product_id, business_id),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+);
+CREATE TABLE inventory_movements (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  business_id BIGINT UNSIGNED NOT NULL,
+  product_id BIGINT UNSIGNED NOT NULL,
+  quantity_delta INT NOT NULL,
+  reason VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);

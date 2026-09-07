@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { promotionService } from './promotion.service.js';
+import { promotionRepository } from './promotion.repository.js';
+
+const schema = z.object({ code: z.string().regex(/^[A-Za-z0-9_-]+$/).max(80), name: z.string().min(2).max(160), type: z.enum(['percentage', 'fixed']), value: z.coerce.number().positive(), minimumOrderAmount: z.coerce.number().nonnegative().optional(), maximumDiscount: z.coerce.number().positive().nullable().optional(), startsAt: z.string().datetime().nullable().optional(), endsAt: z.string().datetime().nullable().optional(), usageLimit: z.coerce.number().int().positive().nullable().optional(), perCustomerLimit: z.coerce.number().int().positive().nullable().optional() });
+export const promotionRoutes = Router();
+promotionRoutes.use(authenticate, resolveTenantFromAuth);
+promotionRoutes.get('/', requireStaff, asyncHandler(async (req, res) => success(res, await promotionRepository.list(req.tenant.id))));
+promotionRoutes.post('/', requireStaff, validate(schema), asyncHandler(async (req, res) => success(res, await promotionService.create(req.body, req.tenant.id), 201)));
+promotionRoutes.get('/:id', requireStaff, asyncHandler(async (req, res) => success(res, await promotionRepository.findById(req.params.id, req.tenant.id))));
+promotionRoutes.patch('/:id', requireStaff, validate(schema.partial().extend({ version: z.coerce.number().int().nonnegative(), active: z.boolean().optional(), freeShipping: z.boolean().optional() })), asyncHandler(async (req, res) => success(res, await promotionRepository.update(req.params.id, req.body, req.tenant.id))));
+promotionRoutes.delete('/:id', requireStaff, asyncHandler(async (req, res) => success(res, await promotionRepository.remove(req.params.id, req.tenant.id))));
+promotionRoutes.post('/validate', validate(z.object({ code: z.string().min(1), subtotal: z.coerce.number().nonnegative() })), asyncHandler(async (req, res) => success(res, await promotionService.validate({ ...req.body, tenantId: req.tenant.id, userId: req.auth.sub }))));

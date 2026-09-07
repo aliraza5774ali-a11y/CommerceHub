@@ -1,0 +1,16 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth, resolveTenant } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { blogRepository } from './blog.repository.js';
+const schema = z.object({ slug: z.string().regex(/^[a-z0-9-]+$/).max(180), title: z.string().min(2).max(240), excerpt: z.string().max(2000).optional(), content: z.string().min(1), featuredImageUrl: z.string().url().optional(), status: z.enum(['DRAFT', 'PUBLISHED', 'SCHEDULED', 'ARCHIVED']).optional() });
+export const blogRoutes = Router();
+blogRoutes.get('/posts', resolveTenant, asyncHandler(async (req, res) => success(res, await blogRepository.list(req.tenant.id, true))));
+blogRoutes.get('/admin/posts', authenticate, resolveTenantFromAuth, requireStaff, asyncHandler(async (req, res) => success(res, await blogRepository.list(req.tenant.id))));
+blogRoutes.post('/admin/posts', authenticate, resolveTenantFromAuth, requireStaff, validate(schema), asyncHandler(async (req, res) => success(res, await blogRepository.create(req.body, req.tenant.id, req.auth.sub), 201)));
+blogRoutes.patch('/admin/posts/:id', authenticate, resolveTenantFromAuth, requireStaff, validate(schema.partial().extend({ version: z.coerce.number().int().nonnegative() })), asyncHandler(async (req, res) => success(res, await blogRepository.update(req.params.id, req.body, req.tenant.id, req.auth.sub))));
+blogRoutes.delete('/admin/posts/:id', authenticate, resolveTenantFromAuth, requireStaff, asyncHandler(async (req, res) => success(res, await blogRepository.remove(req.params.id, req.tenant.id))));

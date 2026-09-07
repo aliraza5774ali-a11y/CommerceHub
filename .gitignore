@@ -1,0 +1,86 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+*.secret
+*.secrets
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+*-service-account.json
+.npmrc
+
+# Logs and runtime output
+*.log
+logs/
+log/
+pids/
+*.pid
+*.seed
+
+# Test and coverage output
+coverage/
+.nyc_output/
+.junit/
+test-results/
+playwright-report/
+blob-report/
+
+# Build and generated output
+dist/
+build/
+out/
+.tmp/
+tmp/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Local databases and database exports
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.sql.gz
+*.dump
+*.bak
+backups/
+
+# Uploaded/local storage data
+uploads/
+storage/
+local-storage/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.orig
+*~
+
+# Keep source-controlled examples and migrations visible
+!.env.example
+!.env.sample
+!Backend/src/database/migrations/
+!Backend/src/database/migrations/*.sql

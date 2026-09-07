@@ -1,0 +1,2 @@
+-- The active-cart generated column and unique key are defined in 003_core_commerce.sql.
+-- This migration is retained for deterministic history and is intentionally a no-op.

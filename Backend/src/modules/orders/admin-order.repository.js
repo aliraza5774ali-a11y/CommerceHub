@@ -1,0 +1,10 @@
+import { pool } from '../../database/connection.js';
+const fields = 'o.id, o.user_id AS userId, o.order_number AS orderNumber, o.status, o.currency, o.subtotal, o.discount_total AS discountTotal, o.shipping_total AS shippingTotal, o.tax_total AS taxTotal, o.total, o.created_at AS createdAt, o.updated_at AS updatedAt';
+export const adminOrderRepository = {
+  async list(tenantId, connection = pool) { const [rows] = await connection.execute(`SELECT ${fields} FROM orders o WHERE o.business_id = ? ORDER BY o.created_at DESC`, [tenantId]); return rows; },
+  async find(id, tenantId, connection = pool) { const [rows] = await connection.execute(`SELECT ${fields} FROM orders o WHERE o.id = ? AND o.business_id = ?`, [id, tenantId]); return rows[0] || null; },
+  async items(id, tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, product_id AS productId, product_name AS productName, sku, quantity, unit_price AS unitPrice, discount, tax, line_total AS lineTotal FROM order_items WHERE order_id = ? AND business_id = ?', [id, tenantId]); return rows; },
+  async updateStatus(id, tenantId, from, to, actorId, connection) { const [result] = await connection.execute('UPDATE orders SET status = ? WHERE id = ? AND business_id = ? AND status = ?', [to, id, tenantId, from]); if (result.affectedRows) await connection.execute('INSERT INTO order_timeline (business_id, order_id, actor_id, event_type, message) VALUES (?, ?, ?, ?, ?)', [tenantId, id, actorId, 'STATUS_CHANGED', `${from} -> ${to}`]); return result.affectedRows > 0; },
+  async addNote(id, tenantId, actorId, note, connection = pool) { const [result] = await connection.execute('INSERT INTO order_notes (business_id, order_id, actor_id, note) VALUES (?, ?, ?, ?)', [tenantId, id, actorId, note]); return { id: result.insertId, note }; },
+  async timeline(id, tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, actor_id AS actorId, event_type AS eventType, message, metadata, created_at AS createdAt FROM order_timeline WHERE order_id = ? AND business_id = ? ORDER BY created_at', [id, tenantId]); return rows; }
+};

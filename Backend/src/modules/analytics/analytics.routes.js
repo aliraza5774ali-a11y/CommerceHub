@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { analyticsService } from './analytics.service.js';
+export const analyticsRoutes = Router();
+analyticsRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+analyticsRoutes.get('/overview', asyncHandler(async (req, res) => success(res, await analyticsService.overview(req.tenant.id, req.query))));
+analyticsRoutes.get('/sales', asyncHandler(async (req, res) => success(res, await analyticsService.sales(req.tenant.id, req.query))));
+analyticsRoutes.get('/orders', asyncHandler(async (req, res) => success(res, await analyticsService.orders(req.tenant.id, req.query))));
+analyticsRoutes.get('/customers', asyncHandler(async (req, res) => success(res, await analyticsService.customers(req.tenant.id, req.query))));
+analyticsRoutes.get('/products', asyncHandler(async (req, res) => success(res, await analyticsService.products(req.tenant.id, req.query))));
+analyticsRoutes.get('/payments', asyncHandler(async (req, res) => success(res, await analyticsService.payments(req.tenant.id, req.query))));

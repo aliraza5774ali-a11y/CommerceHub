@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { taxService } from './tax.service.js';
+const schema = z.object({ name: z.string().min(2).max(120), rate: z.coerce.number().nonnegative(), taxType: z.enum(['percentage', 'fixed']).default('percentage') });
+export const taxRoutes = Router();
+taxRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+taxRoutes.get('/', asyncHandler(async (req, res) => success(res, await taxService.list(req.tenant.id))));
+taxRoutes.post('/', validate(schema), asyncHandler(async (req, res) => success(res, await taxService.create(req.body, req.tenant.id), 201)));
+taxRoutes.patch('/:id', validate(schema.partial().extend({ version: z.coerce.number().int().nonnegative(), active: z.boolean().optional() })), asyncHandler(async (req, res) => success(res, await taxService.update(req.params.id, req.body, req.tenant.id))));

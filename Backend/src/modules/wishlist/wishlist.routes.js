@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { AppError } from '../../utils/errors.js';
+import { wishlistRepository } from './wishlist.repository.js';
+export const wishlistRoutes = Router();
+wishlistRoutes.use(authenticate, resolveTenantFromAuth);
+wishlistRoutes.get('/', asyncHandler(async (req, res) => success(res, await wishlistRepository.list(req.tenant.id, req.auth.sub))));
+wishlistRoutes.post('/', validate(z.object({ productId: z.coerce.number().int().positive() })), asyncHandler(async (req, res) => { const result = await wishlistRepository.add(req.body.productId, req.tenant.id, req.auth.sub); if (!result) throw new AppError('Published product not found', 404, 'PRODUCT_NOT_FOUND'); return success(res, result, 201); }));
+wishlistRoutes.delete('/:productId', asyncHandler(async (req, res) => success(res, await wishlistRepository.remove(req.params.productId, req.tenant.id, req.auth.sub))));
+wishlistRoutes.delete('/', asyncHandler(async (req, res) => success(res, await wishlistRepository.clear(req.tenant.id, req.auth.sub))));

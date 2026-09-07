@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { pagination, pageResult } from '../../utils/pagination.js';
+import { auditRepository } from './audit.repository.js';
+export const auditRoutes = Router();
+auditRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+auditRoutes.get('/', asyncHandler(async (req, res) => { const paging = pagination(req.query); const result = await auditRepository.list(req.tenant.id, { ...paging, ...req.query }); return success(res, pageResult(result.rows, result.total, paging)); }));
+auditRoutes.get('/:id', asyncHandler(async (req, res) => success(res, await auditRepository.find(req.params.id, req.tenant.id))));

@@ -1,0 +1,7 @@
+import { pool } from '../../database/connection.js';
+export const mediaRepository = {
+  async list(tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, file_name AS fileName, file_url AS fileUrl, mime_type AS mimeType, file_size AS fileSize, alt_text AS altText, metadata, uploaded_by AS uploadedBy, created_at AS createdAt FROM media WHERE business_id = ? ORDER BY created_at DESC', [tenantId]); return rows; },
+  async create(input, tenantId, userId, connection = pool) { const [result] = await connection.execute('INSERT INTO media (business_id, uploaded_by, file_name, file_url, mime_type, file_size, alt_text, metadata) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [tenantId, userId, input.fileName, input.fileUrl, input.mimeType, input.fileSize, input.altText || null, input.metadata ? JSON.stringify(input.metadata) : null]); return this.find(result.insertId, tenantId, connection); },
+  async find(id, tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, file_name AS fileName, file_url AS fileUrl, mime_type AS mimeType, file_size AS fileSize, alt_text AS altText, metadata, uploaded_by AS uploadedBy, created_at AS createdAt FROM media WHERE id = ? AND business_id = ?', [id, tenantId]); return rows[0] || null; },
+  async remove(id, tenantId, connection = pool) { const [result] = await connection.execute('DELETE FROM media WHERE id = ? AND business_id = ?', [id, tenantId]); return result.affectedRows > 0; }
+};

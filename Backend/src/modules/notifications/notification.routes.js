@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { pagination } from '../../utils/pagination.js';
+import { notificationService } from './notification.service.js';
+export const notificationRoutes = Router();
+notificationRoutes.use(authenticate, resolveTenantFromAuth);
+notificationRoutes.get('/', asyncHandler(async (req, res) => success(res, await notificationService.list(req.tenant.id, req.auth.sub, pagination(req.query)))));
+notificationRoutes.patch('/:id/read', asyncHandler(async (req, res) => success(res, await notificationService.read(req.params.id, req.tenant.id, req.auth.sub))));
+notificationRoutes.patch('/read-all', asyncHandler(async (req, res) => success(res, await notificationService.readAll(req.tenant.id, req.auth.sub))));

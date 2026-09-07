@@ -1,0 +1,66 @@
+# Backend dependencies
+node_modules/
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+*.secret
+*.secrets
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+*-service-account.json
+.npmrc
+
+# Logs, runtime files, and test output
+*.log
+logs/
+pids/
+*.pid
+coverage/
+.nyc_output/
+test-results/
+
+# Generated/build files
+dist/
+build/
+out/
+.tmp/
+tmp/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Local database files and exports
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.sql.gz
+*.dump
+*.bak
+backups/
+
+# Runtime uploads and local storage
+uploads/
+storage/
+local-storage/
+
+# Editor/OS files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~

@@ -1,0 +1,16 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { adminOrderService } from './admin-order.service.js';
+export const adminOrderRoutes = Router();
+adminOrderRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+adminOrderRoutes.get('/', asyncHandler(async (req, res) => success(res, await adminOrderService.list(req.tenant.id))));
+adminOrderRoutes.get('/:id', asyncHandler(async (req, res) => success(res, await adminOrderService.get(req.params.id, req.tenant.id))));
+adminOrderRoutes.patch('/:id/status', validate(z.object({ status: z.enum(['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURN_REQUESTED', 'RETURNED', 'REFUNDED']) })), asyncHandler(async (req, res) => success(res, await adminOrderService.status(req.params.id, req.tenant.id, req.auth.sub, req.body.status))));
+adminOrderRoutes.post('/:id/notes', validate(z.object({ note: z.string().min(1).max(4000) })), asyncHandler(async (req, res) => success(res, await adminOrderService.note(req.params.id, req.tenant.id, req.auth.sub, req.body.note), 201)));
+adminOrderRoutes.get('/:id/timeline', asyncHandler(async (req, res) => success(res, await adminOrderService.timeline(req.params.id, req.tenant.id))));

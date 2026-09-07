@@ -1,0 +1,18 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { AppError } from '../../utils/errors.js';
+import { warehouseRepository as repository } from './warehouse.repository.js';
+const schema = z.object({ name: z.string().min(2).max(160), address: z.record(z.unknown()).optional(), active: z.boolean().optional() });
+export const warehouseRoutes = Router();
+warehouseRoutes.use(authenticate, resolveTenantFromAuth, requireStaff);
+warehouseRoutes.get('/warehouses', asyncHandler(async (req, res) => success(res, await repository.list(req.tenant.id))));
+warehouseRoutes.post('/warehouses', validate(schema), asyncHandler(async (req, res) => success(res, await repository.create(req.body, req.tenant.id), 201)));
+warehouseRoutes.get('/warehouses/:id', asyncHandler(async (req, res) => success(res, await repository.find(req.params.id, req.tenant.id))));
+warehouseRoutes.patch('/warehouses/:id', validate(schema.extend({ version: z.coerce.number().int().nonnegative() })), asyncHandler(async (req, res) => { const result = await repository.update(req.params.id, req.body, req.tenant.id); if (!result) throw new AppError('Warehouse changed or was not found', 409, 'CONFLICT'); return success(res, result); }));
+warehouseRoutes.delete('/warehouses/:id', asyncHandler(async (req, res) => success(res, await repository.remove(req.params.id, req.tenant.id))));

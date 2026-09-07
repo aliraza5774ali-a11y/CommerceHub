@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { shippingService } from './shipping.service.js';
+
+const addressSchema = z.object({ fullName: z.string().min(2).max(160), phone: z.string().min(5).max(40), addressLine1: z.string().min(2).max(255), addressLine2: z.string().max(255).optional(), area: z.string().max(120).optional(), city: z.string().min(2).max(120), province: z.string().max(120).optional(), postalCode: z.string().max(30).optional(), country: z.string().length(2).default('PK') });
+export const shippingRoutes = Router();
+shippingRoutes.use(authenticate, resolveTenantFromAuth);
+shippingRoutes.post('/addresses', validate(addressSchema), asyncHandler(async (req, res) => success(res, await shippingService.addAddress(req.body, req.tenant.id, req.auth.sub), 201)));
+shippingRoutes.get('/addresses', asyncHandler(async (req, res) => success(res, await shippingService.addresses(req.tenant.id, req.auth.sub))));
+shippingRoutes.get('/methods', asyncHandler(async (req, res) => success(res, await shippingService.methods(req.tenant.id))));
+shippingRoutes.post('/methods', requireStaff, validate(z.object({ name: z.string().min(2).max(120), description: z.string().max(255).optional(), fee: z.coerce.number().nonnegative(), minimumOrder: z.coerce.number().nonnegative().nullable().optional(), maximumOrder: z.coerce.number().nonnegative().nullable().optional(), estimatedDelivery: z.string().max(80).optional() })), asyncHandler(async (req, res) => success(res, await shippingService.createMethod(req.body, req.tenant.id), 201)));
+shippingRoutes.get('/orders/:orderId/shipment', asyncHandler(async (req, res) => success(res, await shippingService.get(req.params.orderId, req.tenant.id, req.auth.sub))));
+shippingRoutes.post('/orders/:orderId/shipment', validate(z.object({ addressId: z.coerce.number().int().positive(), shippingMethodId: z.coerce.number().int().positive() })), asyncHandler(async (req, res) => success(res, await shippingService.createShipment({ ...req.body, orderId: req.params.orderId, tenantId: req.tenant.id, userId: req.auth.sub }), 201)));
+shippingRoutes.patch('/shipments/:id/status', requireStaff, validate(z.object({ status: z.enum(['PROCESSING', 'SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']), version: z.coerce.number().int().nonnegative(), trackingNumber: z.string().max(120).optional() })), asyncHandler(async (req, res) => success(res, await shippingService.transition(req.params.id, req.tenant.id, req.auth.sub, req.body.status, req.body.version, req.body.trackingNumber, { staff: true }))));

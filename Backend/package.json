@@ -1,0 +1,25 @@
+{
+  "name": "commercehub-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test",
+    "test:integration": "node --test test/mysql.integration.test.js",
+    "migrate": "node src/database/migrate.js migrate",
+    "migrate:status": "node src/database/migrate.js status",
+    "migrate:reconcile": "node src/database/migrate.js reconcile"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.3",
+    "zod": "^3.23.8"
+  }
+}

@@ -1,0 +1,27 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenantFromAuth, resolveTenant } from '../../middleware/tenant.middleware.js';
+import { requireStaff } from '../../middleware/authorize.middleware.js';
+import { validate } from '../../middleware/validation.middleware.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { success } from '../../utils/apiResponse.js';
+import { cmsService } from './cms.service.js';
+
+const pageSchema = z.object({ title: z.string().min(2).max(200), slug: z.string().regex(/^[a-z0-9-]+$/).max(160) });
+const sectionSchema = z.object({ sectionType: z.string().min(2).max(50), position: z.coerce.number().int().nonnegative().optional(), enabled: z.boolean().optional(), content: z.record(z.unknown()) });
+export const cmsRoutes = Router();
+const admin = [authenticate, resolveTenantFromAuth, requireStaff];
+cmsRoutes.get('/storefront/:slug', resolveTenant, asyncHandler(async (req, res) => success(res, await cmsService.getPublishedBySlug(req.params.slug, req.tenant.id))));
+cmsRoutes.get('/pages', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.listPages(req.tenant.id))));
+cmsRoutes.post('/pages', ...admin, validate(pageSchema), asyncHandler(async (req, res) => success(res, await cmsService.createPage(req.body, req.tenant.id, req.auth.sub), 201)));
+cmsRoutes.get('/pages/:id', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.getPage(req.params.id, req.tenant.id))));
+cmsRoutes.patch('/pages/:id', ...admin, validate(pageSchema.partial().extend({ version: z.coerce.number().int().nonnegative() })), asyncHandler(async (req, res) => success(res, await cmsService.updatePage(req.params.id, req.body, req.tenant.id, req.auth.sub))));
+cmsRoutes.delete('/pages/:id', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.deletePage(req.params.id, req.tenant.id, req.auth.sub))));
+cmsRoutes.get('/pages/:pageId/sections', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.getPage(req.params.pageId, req.tenant.id))));
+cmsRoutes.post('/pages/:pageId/sections', ...admin, validate(sectionSchema), asyncHandler(async (req, res) => success(res, await cmsService.addSection(req.params.pageId, req.body, req.tenant.id, req.auth.sub), 201)));
+cmsRoutes.patch('/sections/:id', ...admin, validate(sectionSchema.partial().extend({ version: z.coerce.number().int().nonnegative(), content: z.record(z.unknown()).optional() })), asyncHandler(async (req, res) => success(res, await cmsService.updateSection(req.params.id, req.body, req.tenant.id, req.auth.sub))));
+cmsRoutes.delete('/sections/:id', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.deleteSection(req.params.id, req.tenant.id))));
+cmsRoutes.patch('/sections/reorder', ...admin, validate(z.object({ items: z.array(z.object({ id: z.coerce.number().int().positive(), position: z.coerce.number().int().nonnegative() })).min(1) })), asyncHandler(async (req, res) => success(res, await cmsService.reorder(req.body.items, req.tenant.id))));
+cmsRoutes.post('/pages/:id/publish', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.publish(req.params.id, req.tenant.id, req.auth.sub, 'PUBLISHED'))));
+cmsRoutes.post('/pages/:id/unpublish', ...admin, asyncHandler(async (req, res) => success(res, await cmsService.publish(req.params.id, req.tenant.id, req.auth.sub, 'DRAFT'))));
