@@ -5,12 +5,32 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { success } from '../../utils/apiResponse.js';
 import { validate } from '../../middleware/validation.middleware.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { resolveTenant } from '../../middleware/tenant.middleware.js';
 
-const registerSchema = z.object({ storeName: z.string().trim().min(2).max(120), storeSlug: z.string().regex(/^[a-z0-9-]+$/).min(2).max(60), email: z.string().email().transform((value) => value.toLowerCase()), password: z.string().min(8).max(128), firstName: z.string().trim().min(1).max(80), lastName: z.string().trim().min(1).max(80) });
+const registerNewStoreSchema = z.object({ storeName: z.string().trim().min(2).max(120), storeSlug: z.string().regex(/^[a-z0-9-]+$/).min(2).max(60), email: z.string().email().transform((value) => value.toLowerCase()), password: z.string().min(8).max(128), firstName: z.string().trim().min(1).max(80), lastName: z.string().trim().min(1).max(80) });
+const registerCustomerSchema = z.object({ email: z.string().email().transform((value) => value.toLowerCase()), password: z.string().min(8).max(128), firstName: z.string().trim().min(1).max(80), lastName: z.string().trim().min(1).max(80) });
+
 const loginSchema = z.object({ email: z.string().email().transform((value) => value.toLowerCase()), password: z.string().min(1) });
 
 export const authRoutes = Router();
-authRoutes.post('/register', validate(registerSchema), asyncHandler(async (req, res) => success(res, await authService.register(req.body), 201)));
+
+const optionalTenant = (req, res, next) => {
+  resolveTenant(req, res, (err) => {
+    if (err && err.code === 'TENANT_NOT_FOUND') {
+      return next();
+    }
+    next(err);
+  });
+};
+
+const dynamicRegisterValidation = (req, res, next) => {
+  if (req.tenant) {
+    return validate(registerCustomerSchema)(req, res, next);
+  }
+  return validate(registerNewStoreSchema)(req, res, next);
+};
+
+authRoutes.post('/register', optionalTenant, dynamicRegisterValidation, asyncHandler(async (req, res) => success(res, await authService.register(req.body, req.tenant), 201)));
 authRoutes.post('/login', validate(loginSchema), asyncHandler(async (req, res) => success(res, await authService.login(req.body))));
 authRoutes.post('/refresh', validate(z.object({ refreshToken: z.string().min(1) })), asyncHandler(async (req, res) => success(res, await authService.refresh(req.body.refreshToken))));
 authRoutes.post('/logout', validate(z.object({ refreshToken: z.string().min(1) })), asyncHandler(async (req, res) => { await authService.logout(req.body.refreshToken); return success(res, { loggedOut: true }); }));

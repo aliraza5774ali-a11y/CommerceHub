@@ -21,16 +21,23 @@ function hashToken(token) { return crypto.createHash('sha256').update(token).dig
 function refreshExpiry() { const date = new Date(); date.setDate(date.getDate() + 30); return date; }
 
 export const authService = {
-  async register(input) {
+  async register(input, tenantContext = null) {
     const existing = await authRepository.findByEmail(input.email);
     if (existing) throw new AppError('Email is already registered', 409, 'EMAIL_EXISTS');
     const passwordHash = await bcrypt.hash(input.password, 12);
     const result = await withTransaction(async (connection) => {
-      const slug = input.storeSlug.toLowerCase().trim();
-      const tenant = await tenantRepository.create({ name: input.storeName, slug }, connection);
-      await domainRepository.create({ businessId: tenant.id, host: `${slug}.${env.ROOT_DOMAIN}` }, connection);
-      const [roles] = await connection.execute('SELECT id FROM roles WHERE name = ? LIMIT 1', ['Owner']);
-      const user = await authRepository.createUser({ tenantId: tenant.id, email: input.email, passwordHash, firstName: input.firstName, lastName: input.lastName, roleId: roles[0]?.id }, connection);
+      let tenant;
+      let roleId = null;
+      if (tenantContext) {
+        tenant = tenantContext;
+      } else {
+        const slug = input.storeSlug.toLowerCase().trim();
+        tenant = await tenantRepository.create({ name: input.storeName, slug }, connection);
+        await domainRepository.create({ businessId: tenant.id, host: `${slug}.${env.ROOT_DOMAIN}` }, connection);
+        const [roles] = await connection.execute('SELECT id FROM roles WHERE name = ? LIMIT 1', ['Owner']);
+        roleId = roles[0]?.id;
+      }
+      const user = await authRepository.createUser({ tenantId: tenant.id, email: input.email, passwordHash, firstName: input.firstName, lastName: input.lastName, roleId }, connection);
       return { tenant, user };
     });
     const tokens = await tokenPair(result.user);

@@ -4,7 +4,11 @@ import { AppError } from '../utils/errors.js';
 
 export async function resolveTenant(req, res, next) {
   try {
-    const hostname = (req.hostname || '').toLowerCase();
+    const hostname = (
+  typeof req.query.domain === 'string'
+    ? req.query.domain
+    : req.hostname || ''
+).toLowerCase().trim();
     const tenant = await domainRepository.findTenantByHost(hostname);
     if (!tenant) return next(new AppError('Store could not be resolved from this domain', 404, 'TENANT_NOT_FOUND'));
     if (tenant.status !== 'active') return next(new AppError('Store is not active', 403, 'TENANT_INACTIVE'));
