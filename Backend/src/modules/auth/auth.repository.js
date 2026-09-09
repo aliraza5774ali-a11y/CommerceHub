@@ -3,8 +3,10 @@ import { pool } from '../../database/connection.js';
 const userSelect = `SELECT u.id, u.business_id AS tenantId, u.email, u.first_name AS firstName, u.last_name AS lastName, u.password_hash AS passwordHash, u.status, u.is_platform_admin AS isPlatformAdmin, r.name AS roleName FROM users u LEFT JOIN roles r ON r.id = u.role_id`;
 
 export const authRepository = {
-  async findByEmail(email, connection = pool) {
-    const [rows] = await connection.execute(`${userSelect} WHERE u.email = ? LIMIT 1`, [email]);
+  async findByEmail(email, tenantIdOrConnection = pool) {
+    const scoped = typeof tenantIdOrConnection === 'number' || typeof tenantIdOrConnection === 'string';
+    const connection = scoped ? pool : tenantIdOrConnection;
+    const [rows] = await connection.execute(`${userSelect} WHERE u.email = ?${scoped ? ' AND u.business_id = ?' : ''} LIMIT 1`, scoped ? [email, tenantIdOrConnection] : [email]);
     return rows[0] || null;
   },
   async findById(id, connection = pool) {

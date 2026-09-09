@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+body {
+  background: #fafaf9;
+}
+
+/* Calibrate low-contrast light-surface borders without changing dark media controls. */
+[class~="border-black/5"],
+[class~="border-black/6"] {
+  border-color: rgb(0 0 0 / 0.12) !important;
+}
+
+[class~="border-black/8"] {
+  border-color: rgb(0 0 0 / 0.14) !important;
+}
+
+[class~="border-black/10"] {
+  border-color: rgb(0 0 0 / 0.16) !important;
+}
+
+/* Keep existing card structure, but give the whole product a softer radius. */
+:where(.rounded-2xl) {
+  border-radius: 1.25rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .soft-lift {
+    transition: transform 300ms ease, box-shadow 300ms ease;
+  }
+
+  .soft-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 34px -20px rgb(0 0 0 / 0.28);
+  }
+
+  .rounded-2xl.bg-white,
+  .rounded-3xl.bg-white {
+    transition: transform 300ms ease, box-shadow 300ms ease;
+  }
+
+  .rounded-2xl.bg-white:hover,
+  .rounded-3xl.bg-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px -20px rgb(0 0 0 / 0.24);
+  }
+}
+
+@theme {
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif; /* hero, card, section headings */
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;   /* body / context text */
+  --font-mono: "Space Mono", ui-monospace, monospace;            /* tags, labels, badges */
+  --font-price: "Geist Mono", ui-monospace, monospace;            /* prices, dashboard numerals */
+}
+
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none !important;
+  }
+}

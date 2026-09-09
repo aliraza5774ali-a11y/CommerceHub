@@ -1,0 +1,1 @@
+ALTER TABLE users DROP INDEX email, ADD UNIQUE KEY uq_user_email_tenant (business_id, email);

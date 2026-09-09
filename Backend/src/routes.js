@@ -26,12 +26,14 @@ import { reviewRoutes } from './modules/reviews/review.routes.js';
 import { blogRoutes } from './modules/blog/blog.routes.js';
 import { adminOrderRoutes } from './modules/orders/admin-order.routes.js';
 import { catalogManagementRoutes } from './modules/catalog/catalog-management.routes.js';
+import { catalogPublicRoutes } from './modules/catalog/catalog-public.routes.js';
 import { warehouseRoutes } from './modules/inventory/warehouse.routes.js';
 
 export const routes = Router();
 routes.use('/auth', authRoutes);
 routes.use('/tenants', tenantRoutes);
 routes.use('/domains', domainRoutes);
+routes.use('/catalog/public', catalogPublicRoutes);
 routes.use('/catalog', catalogRoutes);
 routes.use('/catalog', catalogManagementRoutes);
 routes.use('/inventory', inventoryRoutes);

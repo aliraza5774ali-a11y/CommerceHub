@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth.middleware.js';
-import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
+import { resolveTenant, resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
 import { validate } from '../../middleware/validation.middleware.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { success } from '../../utils/apiResponse.js';
@@ -9,7 +9,7 @@ import { AppError } from '../../utils/errors.js';
 import { reviewRepository } from './review.repository.js';
 const schema = z.object({ rating: z.coerce.number().int().min(1).max(5), title: z.string().max(200).optional(), body: z.string().max(5000).optional(), orderId: z.coerce.number().int().positive().optional() });
 export const reviewRoutes = Router();
-reviewRoutes.get('/products/:productId', asyncHandler(async (req, res) => { const { domainRepository } = await import('../domains/domain.repository.js'); const tenant = await domainRepository.findTenantByHost(req.hostname.toLowerCase()); if (!tenant) throw new AppError('Store could not be resolved from this domain', 404, 'TENANT_NOT_FOUND'); return success(res, await reviewRepository.list(req.params.productId, tenant.id)); }));
+reviewRoutes.get('/products/:productId', resolveTenant, asyncHandler(async (req, res) => success(res, await reviewRepository.list(req.params.productId, req.tenant.id))));
 reviewRoutes.post('/products/:productId', authenticate, resolveTenantFromAuth, validate(schema), asyncHandler(async (req, res) => { const purchase = await reviewRepository.purchased(req.params.productId, req.tenant.id, req.auth.sub); if (!purchase) throw new AppError('Verified purchase required', 403, 'PURCHASE_REQUIRED'); return success(res, await reviewRepository.create({ ...req.body, productId: req.params.productId, orderId: req.body.orderId || purchase.id, verifiedPurchase: true }, req.tenant.id, req.auth.sub), 201); }));
 reviewRoutes.patch('/:id', authenticate, resolveTenantFromAuth, validate(schema.extend({ version: z.coerce.number().int().nonnegative() })), asyncHandler(async (req, res) => { const result = await reviewRepository.update(req.params.id, req.body, req.tenant.id, req.auth.sub); if (!result) throw new AppError('Review changed or was not found', 409, 'CONFLICT'); return success(res, result); }));
 reviewRoutes.delete('/:id', authenticate, resolveTenantFromAuth, asyncHandler(async (req, res) => { if (!(await reviewRepository.remove(req.params.id, req.tenant.id, req.auth.sub))) throw new AppError('Review not found', 404, 'REVIEW_NOT_FOUND'); return success(res, null); }));

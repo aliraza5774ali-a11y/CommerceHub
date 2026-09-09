@@ -14,15 +14,47 @@ function publicUser(user) {
 }
 async function tokenPair(user) {
   const permissions = await authRepository.permissionsForUser(user.id);
-  const claims = { tenantId: user.tenantId, email: user.email, role: user.roleName, permissions, isPlatformAdmin: Boolean(user.isPlatformAdmin) };
-  return { accessToken: jwt.sign(claims, env.JWT_ACCESS_SECRET, { subject: String(user.id), expiresIn: env.ACCESS_TOKEN_TTL }), refreshToken: jwt.sign(claims, env.JWT_REFRESH_SECRET, { subject: String(user.id), expiresIn: env.REFRESH_TOKEN_TTL }) };
+
+  const claims = {
+    tenantId: user.tenantId,
+    email: user.email,
+    role: user.roleName,
+    permissions,
+    isPlatformAdmin: Boolean(user.isPlatformAdmin)
+  };
+
+  const accessToken = jwt.sign(
+    claims,
+    env.JWT_ACCESS_SECRET,
+    {
+      subject: String(user.id),
+      expiresIn: env.ACCESS_TOKEN_TTL
+    }
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      ...claims,
+      jti: crypto.randomUUID()
+    },
+    env.JWT_REFRESH_SECRET,
+    {
+      subject: String(user.id),
+      expiresIn: env.REFRESH_TOKEN_TTL
+    }
+  );
+
+  return {
+    accessToken,
+    refreshToken
+  };
 }
 function hashToken(token) { return crypto.createHash('sha256').update(token).digest('hex'); }
 function refreshExpiry() { const date = new Date(); date.setDate(date.getDate() + 30); return date; }
 
 export const authService = {
   async register(input, tenantContext = null) {
-    const existing = await authRepository.findByEmail(input.email);
+    const existing = await authRepository.findByEmail(input.email, tenantContext?.id ?? null);
     if (existing) throw new AppError('Email is already registered', 409, 'EMAIL_EXISTS');
     const passwordHash = await bcrypt.hash(input.password, 12);
     const result = await withTransaction(async (connection) => {
@@ -44,8 +76,8 @@ export const authService = {
     await authRepository.createRefreshToken({ userId: result.user.id, tokenHash: hashToken(tokens.refreshToken), expiresAt: refreshExpiry() });
     return { user: publicUser(result.user), ...tokens };
   },
-  async login({ email, password }) {
-    const user = assertFound(await authRepository.findByEmail(email), 'Invalid email or password');
+  async login({ email, password }, tenantContext = null) {
+    const user = assertFound(await authRepository.findByEmail(email, tenantContext?.id), 'Invalid email or password');
     if (user.status !== 'active' || !(await bcrypt.compare(password, user.passwordHash))) throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     const tokens = await tokenPair(user);
     await authRepository.createRefreshToken({ userId: user.id, tokenHash: hashToken(tokens.refreshToken), expiresAt: refreshExpiry() });

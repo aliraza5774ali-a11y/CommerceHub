@@ -31,7 +31,10 @@ const dynamicRegisterValidation = (req, res, next) => {
 };
 
 authRoutes.post('/register', optionalTenant, dynamicRegisterValidation, asyncHandler(async (req, res) => success(res, await authService.register(req.body, req.tenant), 201)));
-authRoutes.post('/login', validate(loginSchema), asyncHandler(async (req, res) => success(res, await authService.login(req.body))));
+// A store login must be scoped to the resolved store.  This is especially
+// important in development where the SPA calls the API host and supplies the
+// storefront host through the supported `domain` query parameter.
+authRoutes.post('/login', optionalTenant, validate(loginSchema), asyncHandler(async (req, res) => success(res, await authService.login(req.body, req.tenant))));
 authRoutes.post('/refresh', validate(z.object({ refreshToken: z.string().min(1) })), asyncHandler(async (req, res) => success(res, await authService.refresh(req.body.refreshToken))));
 authRoutes.post('/logout', validate(z.object({ refreshToken: z.string().min(1) })), asyncHandler(async (req, res) => { await authService.logout(req.body.refreshToken); return success(res, { loggedOut: true }); }));
 authRoutes.post('/forgot-password', validate(z.object({ email: z.string().email().transform((value) => value.toLowerCase()) })), asyncHandler(async (req, res) => success(res, await authService.forgotPassword(req.body.email))));

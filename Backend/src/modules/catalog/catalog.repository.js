@@ -1,6 +1,14 @@
 import { pool } from '../../database/connection.js';
 
 export const catalogRepository = {
+  async listPublic(tenantId, connection = pool) {
+    const [rows] = await connection.execute(`SELECT id, name, slug, description, price, sale_price AS salePrice, created_at AS createdAt FROM products WHERE business_id = ? AND status = 'published' ORDER BY created_at DESC`, [tenantId]);
+    return rows;
+  },
+  async findPublicBySlug(slug, tenantId, connection = pool) {
+    const [rows] = await connection.execute(`SELECT id, name, slug, description, price, sale_price AS salePrice, created_at AS createdAt FROM products WHERE slug = ? AND business_id = ? AND status = 'published' LIMIT 1`, [slug, tenantId]);
+    return rows[0] || null;
+  },
   async list(tenantId, connection = pool) {
     const [rows] = await connection.execute(`SELECT id, name, slug, description, price, sale_price AS salePrice, sku, status, version, created_at AS createdAt FROM products WHERE business_id = ? ORDER BY created_at DESC`, [tenantId]);
     return rows;
