@@ -27,6 +27,7 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
+  const cartCount = useSelector((state) => state.cart.items.reduce((total, item) => total + item.quantity, 0));
   const isCartOpen = useSelector((state) => state.ui.isCartOpen);
   const isSearchOpen = useSelector((state) => state.ui.isSearchOpen);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -102,7 +103,7 @@ const navbarSolid = isWhiteNavbar || isScrolled || isMobileMenuOpen;
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`relative px-4 py-2 font-sans text-[13px] font-medium uppercase tracking-[0.06em] no-underline transition-colors duration-200 after:absolute after:bottom-1 after:left-4 after:right-4 after:h-px after:origin-left after:bg-[#cfff04] after:transition-transform after:duration-200 after:content-[''] ${
+                  className={`relative px-4 py-2 font-sans text-[13px] font-medium uppercase tracking-[0.06em] no-underline transition-colors duration-200 after:absolute after:bottom-1 after:left-4 after:right-4 after:h-px after:origin-left after:bg-accent after:transition-transform after:duration-200 after:content-[''] ${
   isActive
     ? `after:scale-x-100 ${navbarSolid ? "text-black" : "text-white"}`
     : `after:scale-x-0 ${navbarSolid ? "text-black/70 hover:text-black" : "text-white/80 hover:text-white"} hover:after:scale-x-100`
@@ -124,10 +125,15 @@ const navbarSolid = isWhiteNavbar || isScrolled || isMobileMenuOpen;
             </button>
             <button
               onClick={() => dispatch(openCart())}
-              className={iconClass()}
+              className={`${iconClass()} relative`}
               aria-label="Open cart"
             >
               <Handbag size={16} />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-accent-ink">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </button>
             <Link
               to={auth.isAuthenticated ? (auth.user?.roleName === "Owner" ? "/admin" : "/account") : "/login"}
@@ -212,7 +218,7 @@ const navbarSolid = isWhiteNavbar || isScrolled || isMobileMenuOpen;
                         : "translate-x-3 opacity-0"
                     } ${
                       isActive
-                        ? "border-[#cfff04] bg-[#cfff04]/10 text-black"
+                        ? "border-accent bg-accent/10 text-black"
                         : "border-black/10 bg-white text-black/70 hover:border-black/20 hover:bg-white hover:text-black"
                     }`}
                   >
@@ -220,7 +226,7 @@ const navbarSolid = isWhiteNavbar || isScrolled || isMobileMenuOpen;
                     <span
                       className={`h-2 w-2 rounded-full transition-all duration-200 ${
                         isActive
-                          ? "bg-[#cfff04]"
+                          ? "bg-accent"
                           : "bg-black/20 group-hover:bg-black/40"
                       }`}
                     />

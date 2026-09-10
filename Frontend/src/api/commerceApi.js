@@ -30,6 +30,33 @@ export const api = {
   adjustInventory: async (id, input) =>
     data(await apiClient.post(`/inventory/${id}/adjust`, input)),
 
+  inventoryList: async () =>
+    data(await apiClient.get("/inventory")),
+
+  categories: async () =>
+    data(await apiClient.get("/catalog/categories")),
+
+  createCategory: async (input) =>
+    data(await apiClient.post("/catalog/categories", input)),
+
+  updateCategory: async (id, input) =>
+    data(await apiClient.patch(`/catalog/categories/${id}`, input)),
+
+  deleteCategory: async (id) =>
+    data(await apiClient.delete(`/catalog/categories/${id}`)),
+
+  warehouses: async () =>
+    data(await apiClient.get("/inventory/warehouses")),
+
+  createWarehouse: async (input) =>
+    data(await apiClient.post("/inventory/warehouses", input)),
+
+  updateWarehouse: async (id, input) =>
+    data(await apiClient.patch(`/inventory/warehouses/${id}`, input)),
+
+  deleteWarehouse: async (id) =>
+    data(await apiClient.delete(`/inventory/warehouses/${id}`)),
+
   adminOrders: async () =>
     data(await apiClient.get("/admin/orders")),
 

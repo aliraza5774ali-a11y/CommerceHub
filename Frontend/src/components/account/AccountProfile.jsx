@@ -3,7 +3,7 @@ import { Mail, ShieldCheck, User as UserIcon } from "lucide-react";
 import SectionHeader from "../../components/SectionHeader";
 
 const ROLE_STYLES = {
-  Owner: "bg-[#cfff04]/15 text-black border-[#cfff04]/40",
+  Owner: "bg-accent/15 text-black border-accent/40",
   Admin: "bg-black/8 text-black/70 border-black/15",
   Staff: "bg-black/5 text-black/55 border-black/10",
 };

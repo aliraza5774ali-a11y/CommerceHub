@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   LayoutGrid,
   Package,
+  FolderTree,
+  Boxes,
   Receipt,
   Users,
   Globe2,
@@ -23,6 +25,8 @@ const isOwner = (user) => user?.roleName === "Owner";
 const NAV_ITEMS = [
   { label: "Overview", to: "/admin", end: true, icon: LayoutGrid, roles: ["Owner", "Admin", "Staff"] },
   { label: "Products", to: "/admin/products", icon: Package, roles: ["Owner", "Admin", "Staff"] },
+  { label: "Categories", to: "/admin/categories", icon: FolderTree, roles: ["Owner", "Admin", "Staff"] },
+  { label: "Inventory", to: "/admin/inventory", icon: Boxes, roles: ["Owner", "Admin", "Staff"] },
   { label: "Orders", to: "/admin/orders", icon: Receipt, roles: ["Owner", "Admin", "Staff"] },
   { label: "Customers", to: "/admin/customers", icon: Users, roles: ["Owner", "Admin", "Staff"] },
   { label: "Domains", to: "/admin/domains", icon: Globe2, roles: ["Owner"] },
@@ -30,7 +34,7 @@ const NAV_ITEMS = [
 ];
 
 const ROLE_STYLES = {
-  Owner: "bg-[#cfff04]/15 text-black border-[#cfff04]/40",
+  Owner: "bg-accent/15 text-black border-accent/40",
   Admin: "bg-black/8 text-black/70 border-black/15",
   Staff: "bg-black/5 text-black/55 border-black/10",
 };
@@ -52,7 +56,7 @@ function SidebarContent({ user, items, onNavigate }) {
   return (
     <div className="flex h-full flex-col bg-black text-white">
       <div className="flex items-center gap-2.5 border-b border-white/10 px-6 py-6">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#cfff04] text-black">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-black">
           <Store size={16} strokeWidth={2} />
         </span>
         <div className="min-w-0">
@@ -81,7 +85,7 @@ function SidebarContent({ user, items, onNavigate }) {
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={17} strokeWidth={1.75} className={isActive ? "text-[#cfff04]" : ""} />
+                    <Icon size={17} strokeWidth={1.75} className={isActive ? "text-accent" : ""} />
                     <span className="font-medium">{label}</span>
                     {isActive && <ChevronRight size={14} className="ml-auto text-white/30" />}
                   </>

@@ -98,8 +98,10 @@ export default function AdminDomains() {
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-3 text-red-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle size={16} />
+            </span>
             <p className="font-medium">{state.error}</p>
           </div>
           <button
@@ -113,7 +115,10 @@ export default function AdminDomains() {
       )}
 
       {!state.loading && !state.error && list.length === 0 && (
-        <div className="flex flex-col items-start gap-2 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+            <Globe2 size={16} strokeWidth={1.75} />
+          </span>
           <p className="font-display text-lg font-semibold text-black">No domains configured</p>
           <p className="max-w-md text-sm text-black/55">
             Your store's default address will appear here once available from the domains endpoint.
@@ -129,14 +134,14 @@ export default function AdminDomains() {
               className="flex flex-col gap-3 rounded-2xl border border-black/8 bg-white p-5 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink">
                   <Globe2 size={16} strokeWidth={1.75} />
                 </span>
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-price text-sm text-black">{d.host}</p>
                     {d.primary && (
-                      <span className="rounded-full border border-[#cfff04]/40 bg-[#cfff04]/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-black">
+                      <span className="rounded-full border border-accent/40 bg-accent/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.1em] text-accent-ink">
                         Primary
                       </span>
                     )}
@@ -148,7 +153,11 @@ export default function AdminDomains() {
               </div>
               <button
                 onClick={() => copy(d.host, d.id ?? i)}
-                className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/10 px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-black/60 transition hover:border-black/25 hover:text-black"
+                className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition ${
+                  copied === (d.id ?? i)
+                    ? "border-accent/40 bg-accent/15 text-accent-ink"
+                    : "border-black/10 text-black/60 hover:border-black/25 hover:text-black"
+                }`}
               >
                 {copied === (d.id ?? i) ? <Check size={13} /> : <Copy size={13} />}
                 {copied === (d.id ?? i) ? "Copied" : "Copy"}

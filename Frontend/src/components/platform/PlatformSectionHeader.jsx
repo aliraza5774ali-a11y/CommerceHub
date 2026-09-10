@@ -18,7 +18,7 @@ const PlatformSectionHeader = ({ badge, icon, heading, ctaLabel, ctaLink, ctaOnC
         {badge && (
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-black/8 bg-black/[0.02] py-1 pl-1 pr-3 shadow-sm">
             {icon && (
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#cfff04]/20 text-black">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-black">
                 {icon}
               </span>
             )}

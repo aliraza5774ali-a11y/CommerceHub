@@ -15,10 +15,26 @@ function labelize(key) {
 
 function displayValue(value) {
   if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "boolean") return value ? "Enabled" : "Disabled";
   if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
+}
+
+function BooleanPill({ value }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${
+        value ? "border-accent/40 bg-accent/15 text-accent-ink" : "border-black/10 bg-[#f8f8f8] text-black/50"
+      }`}
+    >
+      {value ? "Enabled" : "Disabled"}
+    </span>
+  );
+}
+
+function SettingValue({ value }) {
+  if (typeof value === "boolean") return <BooleanPill value={value} />;
+  return <span className="font-price text-sm text-black/85">{displayValue(value)}</span>;
 }
 
 export default function AdminSettings() {
@@ -69,8 +85,10 @@ export default function AdminSettings() {
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-3 text-red-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle size={16} />
+            </span>
             <p className="font-medium">{state.error}</p>
           </div>
           <button
@@ -84,7 +102,10 @@ export default function AdminSettings() {
       )}
 
       {!state.loading && !state.error && entries.length === 0 && nestedGroups.length === 0 && (
-        <div className="flex flex-col items-start gap-2 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+            <SettingsIcon size={16} strokeWidth={1.75} />
+          </span>
           <p className="font-display text-lg font-semibold text-black">No settings returned</p>
           <p className="max-w-md text-sm text-black/55">
             The settings endpoint didn't return any fields to display.
@@ -94,12 +115,17 @@ export default function AdminSettings() {
 
       {!state.loading && !state.error && entries.length > 0 && (
         <div className="rounded-2xl border border-black/8 bg-white p-6">
-          <h3 className="font-display text-lg font-semibold text-black">Store settings</h3>
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-black">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            Store settings
+          </h3>
           <dl className="mt-4 divide-y divide-black/5">
             {entries.map(([key, value]) => (
               <div key={key} className="flex items-center justify-between gap-4 py-3.5">
                 <dt className="text-sm text-black/60">{labelize(key)}</dt>
-                <dd className="font-price text-sm text-black/85">{displayValue(value)}</dd>
+                <dd>
+                  <SettingValue value={value} />
+                </dd>
               </div>
             ))}
           </dl>
@@ -110,12 +136,17 @@ export default function AdminSettings() {
         !state.error &&
         nestedGroups.map(([groupKey, group]) => (
           <div key={groupKey} className="rounded-2xl border border-black/8 bg-white p-6">
-            <h3 className="font-display text-lg font-semibold text-black">{labelize(groupKey)}</h3>
+            <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-black">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              {labelize(groupKey)}
+            </h3>
             <dl className="mt-4 divide-y divide-black/5">
               {Object.entries(group).map(([key, value]) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-3.5">
                   <dt className="text-sm text-black/60">{labelize(key)}</dt>
-                  <dd className="font-price text-sm text-black/85">{displayValue(value)}</dd>
+                  <dd>
+                    <SettingValue value={value} />
+                  </dd>
                 </div>
               ))}
             </dl>

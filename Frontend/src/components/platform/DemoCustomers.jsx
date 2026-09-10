@@ -7,7 +7,7 @@ const CUSTOMERS = [
 
 const badgeColor = (status) =>
   status === "VIP"
-    ? "bg-[#cfff04]/15 text-[#cfff04]"
+    ? "bg-accent/15 text-accent"
     : status === "New"
     ? "bg-black/[0.05] text-black/45"
     : "bg-emerald-500/10 text-emerald-700";
@@ -27,7 +27,7 @@ const DemoCustomers = () => {
             className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-3 rounded-xl border border-black/8 bg-white px-3 py-2.5 shadow-sm transition-all duration-500"
             style={{ transitionDelay: `${i * 60}ms` }}
           >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#cfff04]/15 text-[9px] font-semibold text-black">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/15 text-[9px] font-semibold text-black">
               {c.name.charAt(0)}
             </span>
             <span className="truncate text-[11.5px] font-medium text-black/85">{c.name}</span>

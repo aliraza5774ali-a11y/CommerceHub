@@ -1,6 +1,6 @@
 import { pool } from '../../database/connection.js';
 
-const userSelect = `SELECT u.id, u.business_id AS tenantId, u.email, u.first_name AS firstName, u.last_name AS lastName, u.password_hash AS passwordHash, u.status, u.is_platform_admin AS isPlatformAdmin, r.name AS roleName FROM users u LEFT JOIN roles r ON r.id = u.role_id`;
+const userSelect = `SELECT u.id, u.business_id AS tenantId, u.email, u.first_name AS firstName, u.last_name AS lastName, u.password_hash AS passwordHash, u.status, u.is_platform_admin AS isPlatformAdmin, u.two_factor_enabled AS twoFactorEnabled, r.name AS roleName FROM users u LEFT JOIN roles r ON r.id = u.role_id`;
 
 export const authRepository = {
   async findByEmail(email, tenantIdOrConnection = pool) {
@@ -8,6 +8,22 @@ export const authRepository = {
     const connection = scoped ? pool : tenantIdOrConnection;
     const [rows] = await connection.execute(`${userSelect} WHERE u.email = ?${scoped ? ' AND u.business_id = ?' : ''} LIMIT 1`, scoped ? [email, tenantIdOrConnection] : [email]);
     return rows[0] || null;
+  },
+  // Used for platform-domain business login: the same email can be the Owner/Staff
+  // account of more than one business, since email uniqueness is scoped per tenant.
+  async findAllStaffByEmail(email, connection = pool) {
+    const [rows] = await connection.execute(
+      `SELECT u.id, u.business_id AS tenantId, u.email, u.first_name AS firstName, u.last_name AS lastName,
+              u.password_hash AS passwordHash, u.status, u.is_platform_admin AS isPlatformAdmin,
+              u.two_factor_enabled AS twoFactorEnabled, r.name AS roleName,
+              b.name AS businessName, b.slug AS businessSlug, b.status AS businessStatus
+       FROM users u
+       LEFT JOIN roles r ON r.id = u.role_id
+       JOIN businesses b ON b.id = u.business_id
+       WHERE u.email = ? AND u.role_id IS NOT NULL`,
+      [email]
+    );
+    return rows;
   },
   async findById(id, connection = pool) {
     const [rows] = await connection.execute(`${userSelect} WHERE u.id = ? LIMIT 1`, [id]);
@@ -20,6 +36,22 @@ export const authRepository = {
   async createUser({ tenantId, email, passwordHash, firstName, lastName, roleId }, connection) {
     const [result] = await connection.execute(`INSERT INTO users (business_id, role_id, email, password_hash, first_name, last_name) VALUES (?, ?, ?, ?, ?, ?)`, [tenantId, roleId, email, passwordHash, firstName, lastName]);
     return this.findById(result.insertId, connection);
+  },
+  async setTwoFactor(userId, enabled, connection = pool) {
+    await connection.execute('UPDATE users SET two_factor_enabled = ? WHERE id = ?', [enabled, userId]);
+  },
+  async createTwoFactorCode({ userId, codeHash, expiresAt }, connection = pool) {
+    await connection.execute('DELETE FROM two_factor_codes WHERE user_id = ? AND consumed_at IS NULL', [userId]);
+    await connection.execute('INSERT INTO two_factor_codes (user_id, code_hash, expires_at) VALUES (?, ?, ?)', [userId, codeHash, expiresAt]);
+  },
+  async consumeTwoFactorCode(userId, codeHash, connection = pool) {
+    const [rows] = await connection.execute(
+      'SELECT id FROM two_factor_codes WHERE user_id = ? AND code_hash = ? AND consumed_at IS NULL AND expires_at > CURRENT_TIMESTAMP LIMIT 1',
+      [userId, codeHash]
+    );
+    if (!rows[0]) return false;
+    await connection.execute('UPDATE two_factor_codes SET consumed_at = CURRENT_TIMESTAMP WHERE id = ?', [rows[0].id]);
+    return true;
   },
   async createRefreshToken({ userId, tokenHash, expiresAt }, connection = pool) {
     await connection.execute('INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)', [userId, tokenHash, expiresAt]);

@@ -7,7 +7,7 @@ export const cartRepository = {
     return rows[0] || null;
   },
   async findActive(userId, tenantId, connection = pool) {
-    const [rows] = await connection.execute(`SELECT ${cartFields} FROM carts c WHERE c.id = ? AND c.business_id = ? AND c.user_id = ? AND c.status = 'active' LIMIT 1`, [userId, tenantId, userId]);
+    const [rows] = await connection.execute(`SELECT ${cartFields} FROM carts c WHERE c.business_id = ? AND c.user_id = ? AND c.status = 'active' LIMIT 1`, [tenantId, userId]);
     return rows[0] || null;
   },
   async findOrCreate(userId, tenantId, connection = pool) {

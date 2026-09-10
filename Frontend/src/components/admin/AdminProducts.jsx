@@ -37,7 +37,14 @@ function productFields(p) {
   const stockRaw = pick(p, ["stock", "quantity", "inventoryCount", "stockCount"]);
   const stock = typeof stockRaw === "number" ? stockRaw : null;
   const sku = pick(p, ["sku"]);
-  return { id, name, price, currency, status, published, stock, sku, raw: p };
+  const slug = pick(p, ["slug"]);
+  const description = pick(p, ["description"], "");
+  const version = pick(p, ["version"]);
+  return { id, name, price, currency, status, published, stock, sku, slug, description, version, raw: p };
+}
+
+function slugify(value) {
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 function formatMoney(value, currency = "USD") {
@@ -58,7 +65,7 @@ function StatusPill({ published, status }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-black/10 bg-[#f8f8f8] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-black/55">
+    <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/15 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-accent-ink">
       {status || "Draft"}
     </span>
   );
@@ -141,7 +148,7 @@ export default function AdminProducts() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products…"
-            className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-black/30"
+            className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
           />
         </div>
         <button
@@ -222,7 +229,7 @@ export default function AdminProducts() {
                           <button
                             onClick={() => handlePublish(p)}
                             disabled={rowBusy === p.id}
-                            className="inline-flex items-center gap-1 rounded-full bg-black px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-white transition hover:bg-neutral-800 disabled:opacity-50"
+                            className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-accent-ink transition hover:bg-accent-dark disabled:opacity-50"
                           >
                             {rowBusy === p.id ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
                             Publish
@@ -272,25 +279,44 @@ export default function AdminProducts() {
 function ProductFormModal({ product, onClose, onSaved, onError }) {
   const isEdit = Boolean(product?.id);
   const [name, setName] = useState(product?.name && product.name !== "Untitled product" ? product.name : "");
+  const [slug, setSlug] = useState(product?.slug || "");
+  const [slugEdited, setSlugEdited] = useState(Boolean(product?.slug));
   const [price, setPrice] = useState(product?.price ?? "");
   const [sku, setSku] = useState(product?.sku ?? "");
+  const [description, setDescription] = useState(product?.description ?? "");
+  const [stock, setStock] = useState(product?.stock ?? "");
+  const [published, setPublished] = useState(Boolean(product?.published));
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     if (submitting) return;
+    const normalizedSlug = slugify(slug || name);
+    const numericPrice = Number(price);
+    if (!name.trim() || !normalizedSlug || price === "" || !Number.isFinite(numericPrice) || numericPrice < 0) {
+      onError("Enter a product name, URL handle, and a valid price.");
+      return;
+    }
     setSubmitting(true);
     const input = {
       name: name.trim(),
-      ...(price !== "" ? { price: Number(price) } : {}),
+      slug: normalizedSlug,
+      price: numericPrice,
       ...(sku.trim() ? { sku: sku.trim() } : {}),
+      ...(description.trim() ? { description: description.trim() } : {}),
+      ...(isEdit ? { version: product.version } : {}),
     };
     try {
       if (isEdit) {
         await api.updateProduct(product.id, input);
+        if (published && !product.published) await api.publishProduct(product.id);
         onSaved(`${name.trim()} updated.`);
       } else {
-        await api.createProduct(input);
+        const created = await api.createProduct(input);
+        if (published) {
+          await api.publishProduct(created.id);
+          if (stock !== "" && Number(stock) > 0) await api.adjustInventory(created.id, { delta: Number(stock), reason: "Initial stock" });
+        }
         onSaved(`${name.trim()} created.`);
       }
     } catch (e2) {
@@ -301,36 +327,91 @@ function ProductFormModal({ product, onClose, onSaved, onError }) {
   };
 
   return (
-    <ModalShell onClose={onClose} title={isEdit ? "Edit product" : "New product"}>
+    <ModalShell onClose={onClose} title={isEdit ? "Edit product" : "New product"} icon={<Package size={15} strokeWidth={1.75} />}>
       <form onSubmit={submit} className="flex flex-col gap-4">
         <Field label="Product name">
           <input
             required
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-black/40"
+            onChange={(e) => { setName(e.target.value); if (!slugEdited) setSlug(slugify(e.target.value)); }}
+            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
             placeholder="e.g. Wool Overcoat"
           />
         </Field>
-        <Field label="Price (optional)">
+        <Field label="URL handle">
           <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-black/40"
-            placeholder="0.00"
+            required
+            value={slug}
+            onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }}
+            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
+            placeholder="e.g. wool-overcoat"
           />
+          <span className="mt-1 block text-xs text-black/45">Lowercase letters, numbers, and hyphens only.</span>
         </Field>
+        <div className={`grid gap-4 ${isEdit ? "grid-cols-1" : "grid-cols-2"}`}>
+          <Field label="Price">
+            <input
+              required
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
+              placeholder="0.00"
+            />
+          </Field>
+          {!isEdit && (
+            <Field label="Initial stock (optional)">
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
+                placeholder="0"
+              />
+            </Field>
+          )}
+        </div>
         <Field label="SKU (optional)">
           <input
             value={sku}
             onChange={(e) => setSku(e.target.value)}
-            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-black/40"
+            className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
             placeholder="e.g. WOL-100"
           />
         </Field>
+        <Field label="Description (optional)">
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full resize-y rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
+            placeholder="A short description for your storefront"
+          />
+        </Field>
+
+        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-black/10 bg-[#f8f8f8] px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium text-black">Publish immediately</span>
+            <span className="block text-xs text-black/50">Make this product visible on your storefront right away.</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+            className="peer sr-only"
+          />
+          <span
+            aria-hidden="true"
+            className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-black/15 transition-colors duration-200 peer-checked:bg-accent"
+          >
+            <span className="inline-block h-[18px] w-[18px] translate-x-[3px] transform rounded-full bg-white shadow transition-transform duration-200 peer-checked:translate-x-[22px]" />
+          </span>
+        </label>
+
         <div className="mt-2 flex items-center justify-end gap-3">
           <button type="button" onClick={onClose} className="px-4 py-2.5 text-sm text-black/55 hover:text-black">
             Cancel
@@ -338,7 +419,7 @@ function ProductFormModal({ product, onClose, onSaved, onError }) {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-ink transition hover:bg-accent-dark disabled:opacity-60"
           >
             {submitting && <Loader2 size={14} className="animate-spin" />}
             {isEdit ? "Save changes" : "Create product"}
@@ -409,7 +490,7 @@ function InventoryModal({ product, onClose, onAdjusted, onError }) {
                 type="number"
                 value={delta}
                 onChange={(e) => setDelta(e.target.value)}
-                className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-black/40"
+                className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
                 placeholder="e.g. 10 or -5"
               />
             </Field>
@@ -417,7 +498,7 @@ function InventoryModal({ product, onClose, onAdjusted, onError }) {
               <input
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-black/40"
+                className="w-full rounded-xl border border-black/15 px-3.5 py-2.5 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
                 placeholder="e.g. Restock, damaged goods"
               />
             </Field>
@@ -428,7 +509,7 @@ function InventoryModal({ product, onClose, onAdjusted, onError }) {
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-ink transition hover:bg-accent-dark disabled:opacity-60"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
                 Apply adjustment
@@ -458,8 +539,12 @@ function ModalShell({ title, icon, onClose, children }) {
         className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-black">
-            {icon}
+          <h3 className="flex items-center gap-2.5 font-display text-lg font-semibold text-black">
+            {icon && (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink">
+                {icon}
+              </span>
+            )}
             {title}
           </h3>
           <button onClick={onClose} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black">
@@ -484,8 +569,10 @@ function Field({ label, children }) {
 function ErrorBlock({ message, onRetry }) {
   return (
     <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-      <div className="flex items-center gap-2 text-red-700">
-        <AlertTriangle size={18} />
+      <div className="flex items-center gap-3 text-red-700">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+          <AlertTriangle size={16} />
+        </span>
         <p className="font-medium">{message}</p>
       </div>
       <button
@@ -502,12 +589,15 @@ function ErrorBlock({ message, onRetry }) {
 function EmptyBlock({ title, description, actionLabel, onAction }) {
   return (
     <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+        <Package size={16} strokeWidth={1.75} />
+      </span>
       <p className="font-display text-lg font-semibold text-black">{title}</p>
       <p className="max-w-md text-sm text-black/55">{description}</p>
       {actionLabel && (
         <button
           onClick={onAction}
-          className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800"
+          className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-ink transition hover:bg-accent-dark"
         >
           <Plus size={14} />
           {actionLabel}

@@ -28,7 +28,7 @@ const PlatformFooter = () => {
         <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
           <div className="flex max-w-md flex-col gap-3 lg:col-span-4">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#cfff04] text-xs font-bold text-black">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-xs font-bold text-black">
                 C
               </span>
               <h2 className="font-display text-2xl font-semibold tracking-wide">

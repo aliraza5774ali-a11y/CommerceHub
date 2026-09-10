@@ -59,7 +59,7 @@ const PricingSection = () => {
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className={`soft-lift flex flex-col gap-6 rounded-3xl border p-8 shadow-sm ${
                 plan.highlighted
-                  ? "border-[#cfff04]/40 bg-white text-black shadow-md lg:-translate-y-3"
+                  ? "border-accent/40 bg-white text-black shadow-md lg:-translate-y-3"
                   : "border-black/8 bg-white text-black"
               }`}
             >
@@ -90,7 +90,7 @@ const PricingSection = () => {
                   <li key={feature} className="flex items-start gap-2.5 text-sm">
                     <span
                       className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
-                        "bg-[#cfff04]/15 text-black"
+                        "bg-accent/15 text-black"
                       }`}
                     >
                       <Check size={10} strokeWidth={3} />
@@ -106,7 +106,7 @@ const PricingSection = () => {
                 to="/open-store"
                 className={`mt-auto inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition active:scale-[0.97] ${
                   plan.highlighted
-                    ? "bg-[#cfff04] text-black hover:bg-[#bce800]"
+                    ? "bg-accent text-black hover:bg-[#bce800]"
                     : "bg-black text-white hover:bg-neutral-800"
                 }`}
               >

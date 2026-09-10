@@ -52,6 +52,13 @@ body {
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;   /* body / context text */
   --font-mono: "Space Mono", ui-monospace, monospace;            /* tags, labels, badges */
   --font-price: "Geist Mono", ui-monospace, monospace;            /* prices, dashboard numerals */
+
+  /* Single source of truth for the brand accent (lime). Every component should
+     reference bg-accent / text-accent / border-accent / ring-accent instead of
+     the raw hex, so the color only ever needs to change in one place. */
+  --color-accent: #cfff04;
+  --color-accent-dark: #a8d400; /* hover/active shade, same hue, darker for contrast on white */
+  --color-accent-ink: #1a2400;  /* near-black text/icon color to sit on top of the accent bg */
 }
 
 @keyframes marquee-left {

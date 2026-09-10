@@ -44,13 +44,13 @@ const PlatformOverview = () => {
                     key={label}
                     className={`flex flex-col gap-2 rounded-xl border p-3.5 ${
                       i === 0
-                        ? "border-black/8 bg-[#cfff04]/15 text-black"
+                        ? "border-black/8 bg-accent/15 text-black"
                         : "border-black/6 bg-black/[0.02] text-black/60"
                     }`}
                   >
                     <span
                       className={`h-1.5 w-8 rounded-full ${
-                        i === 0 ? "bg-[#cfff04]" : "bg-black/10"
+                        i === 0 ? "bg-accent" : "bg-black/10"
                       }`}
                     />
                     <span className="text-[12px] font-medium">{label}</span>

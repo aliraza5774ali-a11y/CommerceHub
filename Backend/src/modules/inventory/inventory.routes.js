@@ -9,5 +9,6 @@ import { resolveTenantFromAuth } from '../../middleware/tenant.middleware.js';
 import { authorize, requireStaff } from '../../middleware/authorize.middleware.js';
 export const inventoryRoutes = Router();
 inventoryRoutes.use(authenticate, resolveTenantFromAuth);
+inventoryRoutes.get('/', requireStaff, asyncHandler(async (req, res) => success(res, await inventoryRepository.listForTenant(req.tenant.id))));
 inventoryRoutes.get('/:productId', asyncHandler(async (req, res) => success(res, await inventoryRepository.get(req.params.productId, req.tenant.id))));
 inventoryRoutes.post('/:productId/adjust', authorize('inventory.adjust'), requireStaff, validate(z.object({ delta: z.coerce.number().int().refine((value) => value !== 0), reason: z.string().trim().min(2).max(255) })), asyncHandler(async (req, res) => success(res, await inventoryRepository.adjust({ productId: req.params.productId, tenantId: req.tenant.id, ...req.body }))));

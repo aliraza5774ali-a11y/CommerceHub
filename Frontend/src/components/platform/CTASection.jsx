@@ -44,7 +44,7 @@ const CTASection = () => {
           <div className="mt-9 flex justify-center">
             <Link
               to="/open-store"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#cfff04] px-8 py-3.5 text-[14px] font-semibold text-black shadow-sm transition-all duration-300 hover:bg-[#bce800] active:scale-[0.97]"
+              className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 text-[14px] font-semibold text-black shadow-sm transition-all duration-300 hover:bg-[#bce800] active:scale-[0.97]"
             >
               Open a Store
               <ArrowRight

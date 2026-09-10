@@ -34,7 +34,7 @@ const BusinessManagementShowcase = () => {
               transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
               className="soft-lift flex flex-col gap-4 rounded-3xl border border-black/8 bg-white p-7 shadow-sm"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#cfff04]/20 text-black">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20 text-black">
                 {card.icon}
               </span>
               <div>

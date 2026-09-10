@@ -45,7 +45,7 @@ const PlatformNavbar = () => {
           <Link
             className="flex items-center gap-2 font-display text-[20px] font-semibold tracking-wide text-black transition-colors duration-200 hover:text-black/70 md:text-[22px]"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#cfff04] text-sm font-bold text-black">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-bold text-black">
               C
             </span>
             CommerceHub
@@ -56,7 +56,7 @@ const PlatformNavbar = () => {
               <a
                 key={link.name}
                 href={link.href}
-                className="relative px-3.5 py-2 font-sans text-[12.5px] font-medium uppercase tracking-[0.06em] text-black/60 no-underline transition-colors duration-200 after:absolute after:bottom-1 after:left-3.5 after:right-3.5 after:h-px after:origin-left after:scale-x-0 after:bg-[#cfff04] after:transition-transform after:duration-200 after:content-[''] hover:text-black hover:after:scale-x-100"
+                className="relative px-3.5 py-2 font-sans text-[12.5px] font-medium uppercase tracking-[0.06em] text-black/60 no-underline transition-colors duration-200 after:absolute after:bottom-1 after:left-3.5 after:right-3.5 after:h-px after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-200 after:content-[''] hover:text-black hover:after:scale-x-100"
               >
                 {link.name}
               </a>
@@ -64,14 +64,15 @@ const PlatformNavbar = () => {
           </div>
 
           <div className="hidden items-center gap-4 lg:flex">
-            <p
-              className="font-sans text-[10.5px] font-medium uppercase tracking-[0.13em] text-black/40"
+            <Link
+              to="/login"
+              className="font-sans text-[12.5px] font-medium uppercase tracking-[0.08em] text-black/60 no-underline transition-colors duration-200 hover:text-black"
             >
-              Already have a store? Sign in from your store&apos;s URL
-            </p>
+              Sign in
+            </Link>
             <Link
               to="/open-store"
-              className="inline-flex items-center justify-center rounded-full bg-[#cfff04] px-5 py-2.5 text-[13px] font-semibold text-black transition-all duration-200 hover:bg-[#bce800] active:scale-[0.97]"
+              className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-[13px] font-semibold text-black transition-all duration-200 hover:bg-[#bce800] active:scale-[0.97]"
             >
               Open a Store
             </Link>
@@ -138,13 +139,17 @@ const PlatformNavbar = () => {
             <Link
               to="/open-store"
               onClick={closeMobileMenu}
-              className="mt-8 flex items-center justify-center rounded-full bg-[#cfff04] px-5 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-[#bce800]"
+              className="mt-8 flex items-center justify-center rounded-full bg-accent px-5 py-3.5 text-sm font-semibold text-black transition-colors hover:bg-[#bce800]"
             >
               Open a Store
             </Link>
-            <p className="mt-4 text-center text-xs text-black/40">
-              Already have a store? Sign in from your store&apos;s URL.
-            </p>
+            <Link
+              to="/login"
+              onClick={closeMobileMenu}
+              className="mt-3 flex items-center justify-center rounded-full border border-black/12 px-5 py-3.5 text-sm font-semibold text-black transition-colors hover:border-black/25"
+            >
+              Sign in
+            </Link>
           </div>
         </div>
       </div>

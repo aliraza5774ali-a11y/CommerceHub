@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, RefreshCw, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { api } from "../../api/commerceApi";
 import { getApiErrorMessage } from "../../api/apiError";
 import SectionHeader from "../../components/SectionHeader";
+import { removeItem, setQuantity } from "../../store/slice/cartSlice";
 
 const errorText = (error) => getApiErrorMessage(error, "Couldn't load your bag. Please try again.");
 
@@ -37,11 +39,15 @@ function formatMoney(value, currency = "USD") {
 }
 
 export default function AccountCart() {
+  const guestItems = useSelector((store) => store.cart.items);
+  const authenticated = useSelector((store) => store.auth.isAuthenticated);
+  const dispatch = useDispatch();
   const [state, setState] = useState({ loading: true, data: null, error: null });
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    if (!authenticated) return undefined;
     api
       .cart()
       .then((data) => !cancelled && setState({ loading: false, data, error: null }))
@@ -49,23 +55,29 @@ export default function AccountCart() {
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [authenticated, guestItems, refreshKey]);
 
   const refresh = () => {
     setState((state) => ({ ...state, loading: true, error: null }));
     setRefreshKey((key) => key + 1);
   };
 
+  const cartData = useMemo(
+    () => (authenticated ? state.data : { items: guestItems }),
+    [authenticated, guestItems, state.data],
+  );
+  const loading = authenticated && state.loading;
+  const error = authenticated ? state.error : null;
   const list = useMemo(() => {
-    const arr = Array.isArray(state.data)
-      ? state.data
-      : Array.isArray(state.data?.items)
-        ? state.data.items
+    const arr = Array.isArray(cartData)
+      ? cartData
+      : Array.isArray(cartData?.items)
+        ? cartData.items
         : [];
     return arr.map(cartItemFields);
-  }, [state.data]);
+  }, [cartData]);
 
-  const subtotalRaw = pick(state.data || {}, ["subtotal", "total", "totalAmount"]);
+  const subtotalRaw = pick(cartData || {}, ["subtotal", "total", "totalAmount"]);
   const computedSubtotal = list.reduce((sum, item) => (typeof item.price === "number" ? sum + item.price * item.quantity : sum), 0);
   const subtotal = typeof subtotalRaw === "number" ? subtotalRaw : list.length ? computedSubtotal : null;
   const currency = pick(state.data || {}, ["currency", "currencyCode"], list[0]?.currency || "USD");
@@ -74,13 +86,13 @@ export default function AccountCart() {
     <div className="flex flex-col gap-6">
       <SectionHeader badge="Account" icon={<ShoppingBag size={12} strokeWidth={2} />} heading="Bag" />
 
-      {state.loading && <CartSkeleton />}
+      {loading && <CartSkeleton />}
 
-      {!state.loading && state.error && (
+      {!loading && error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
           <div className="flex items-center gap-2 text-red-700">
             <AlertTriangle size={18} />
-            <p className="font-medium">{state.error}</p>
+            <p className="font-medium">{error}</p>
           </div>
           <button
             onClick={refresh}
@@ -92,7 +104,7 @@ export default function AccountCart() {
         </div>
       )}
 
-      {!state.loading && !state.error && list.length === 0 && (
+      {!loading && !error && list.length === 0 && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-10">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-black/50">
             <ShoppingBag size={18} strokeWidth={1.75} />
@@ -108,7 +120,7 @@ export default function AccountCart() {
         </div>
       )}
 
-      {!state.loading && !state.error && list.length > 0 && (
+      {!loading && !error && list.length > 0 && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-3 lg:col-span-2">
             {list.map((item, i) => (
@@ -124,7 +136,12 @@ export default function AccountCart() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-sm font-semibold text-black">{item.name}</p>
-                  <p className="mt-1 text-xs text-black/45">Qty {item.quantity}</p>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-black/55">
+                    <button type="button" onClick={() => dispatch(setQuantity({ id: item.id, quantity: item.quantity - 1 }))} className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 hover:bg-black/5" aria-label={`Decrease ${item.name} quantity`}>−</button>
+                    <span className="w-4 text-center tabular-nums">{item.quantity}</span>
+                    <button type="button" onClick={() => dispatch(setQuantity({ id: item.id, quantity: item.quantity + 1 }))} className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 hover:bg-black/5" aria-label={`Increase ${item.name} quantity`}>+</button>
+                    <button type="button" onClick={() => dispatch(removeItem(item.id))} className="ml-2 font-medium text-black/55 underline underline-offset-2 hover:text-black">Remove</button>
+                  </div>
                 </div>
                 <p className="shrink-0 font-price text-sm font-medium text-black">
                   {typeof item.price === "number" ? formatMoney(item.price * item.quantity, item.currency) : "—"}

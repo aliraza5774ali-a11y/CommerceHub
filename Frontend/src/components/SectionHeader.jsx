@@ -14,7 +14,7 @@ const SectionHeader = ({
         {badge && (
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white pl-1 pr-3 py-1 shadow-sm">
             {icon && (
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#cfff04]/20 text-black">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-black">
                 {icon}
               </span>
             )}

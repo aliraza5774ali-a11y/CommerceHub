@@ -1,0 +1,14 @@
+ALTER TABLE businesses ADD COLUMN niche VARCHAR(80) NULL AFTER slug;
+ALTER TABLE businesses ADD COLUMN theme_id VARCHAR(40) NOT NULL DEFAULT 'classic' AFTER niche;
+ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE AFTER is_platform_admin;
+
+CREATE TABLE two_factor_codes (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  code_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  consumed_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_2fa_user (user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

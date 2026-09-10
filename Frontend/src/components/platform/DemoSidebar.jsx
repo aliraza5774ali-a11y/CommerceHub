@@ -19,7 +19,7 @@ const DemoSidebar = ({ activeKey }) => {
             {isActive && (
               <motion.div
                 layoutId="demo-active-pill"
-                className="absolute inset-0 rounded-xl bg-[#cfff04]/15"
+                className="absolute inset-0 rounded-xl bg-accent/15"
                 transition={{ type: "spring", stiffness: 350, damping: 32 }}
               />
             )}

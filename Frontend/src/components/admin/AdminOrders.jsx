@@ -121,7 +121,7 @@ export default function AdminOrders() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search order # or customer…"
-              className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-black/30"
+              className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
             />
           </div>
           {statuses.length > 1 && (
@@ -132,7 +132,7 @@ export default function AdminOrders() {
                   onClick={() => setStatusFilter(s)}
                   className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] transition ${
                     statusFilter === s
-                      ? "border-black bg-black text-white"
+                      ? "border-accent bg-accent text-accent-ink"
                       : "border-black/10 bg-white text-black/55 hover:border-black/25 hover:text-black"
                   }`}
                 >
@@ -155,8 +155,10 @@ export default function AdminOrders() {
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-3 text-red-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle size={16} />
+            </span>
             <p className="font-medium">{state.error}</p>
           </div>
           <button
@@ -170,7 +172,10 @@ export default function AdminOrders() {
       )}
 
       {!state.loading && !state.error && list.length === 0 && (
-        <div className="flex flex-col items-start gap-2 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+            <Receipt size={16} strokeWidth={1.75} />
+          </span>
           <p className="font-display text-lg font-semibold text-black">No orders yet</p>
           <p className="max-w-md text-sm text-black/55">Orders placed on your storefront will appear here.</p>
         </div>
@@ -239,9 +244,14 @@ function OrderDrawer({ order, onClose }) {
         className="relative flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
       >
         <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
-          <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-black/40">Order</p>
-            <h3 className="font-display text-xl font-semibold text-black">{String(order.number)}</h3>
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink">
+              <Receipt size={15} strokeWidth={1.75} />
+            </span>
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-black/40">Order</p>
+              <h3 className="font-display text-xl font-semibold text-black">{String(order.number)}</h3>
+            </div>
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 text-black/40 hover:bg-black/5 hover:text-black">
             <X size={18} />
@@ -271,7 +281,10 @@ function OrderDrawer({ order, onClose }) {
 
           {items.length > 0 && (
             <div className="mt-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-black/40">Line items</p>
+              <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-black/40">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                Line items
+              </p>
               <ul className="mt-3 space-y-2">
                 {items.map((item, i) => (
                   <li key={i} className="flex items-center justify-between rounded-xl bg-[#f8f8f8] px-4 py-3 text-sm">

@@ -36,8 +36,11 @@ routes.use('/domains', domainRoutes);
 routes.use('/catalog/public', catalogPublicRoutes);
 routes.use('/catalog', catalogRoutes);
 routes.use('/catalog', catalogManagementRoutes);
-routes.use('/inventory', inventoryRoutes);
+// `warehouseRoutes` (/inventory/warehouses/...) must be mounted before
+// `inventoryRoutes` (/inventory/:productId) — otherwise "warehouses" is
+// swallowed as a :productId and the warehouse endpoints are unreachable.
 routes.use('/inventory', warehouseRoutes);
+routes.use('/inventory', inventoryRoutes);
 routes.use('/cart', cartRoutes);
 routes.use('/orders', orderRoutes);
 routes.use('/admin/orders', adminOrderRoutes);

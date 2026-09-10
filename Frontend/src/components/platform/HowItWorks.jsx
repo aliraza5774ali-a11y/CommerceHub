@@ -55,7 +55,7 @@ const HowItWorks = () => {
                 className="soft-lift relative flex flex-col gap-4 rounded-3xl border border-black/8 bg-white p-7 shadow-sm transition-colors duration-300 hover:border-black/15"
               >
                 <div className="flex items-center justify-between">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#cfff04]/20 text-black">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/20 text-black">
                     {step.icon}
                   </span>
                   <span className="font-price text-3xl font-bold text-black/[0.08]">

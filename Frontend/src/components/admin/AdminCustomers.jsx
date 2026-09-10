@@ -96,7 +96,7 @@ export default function AdminCustomers() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name or email…"
-            className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-black/30"
+            className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-9 pr-4 text-sm outline-none transition focus:border-accent-dark focus:ring-2 focus:ring-accent/30"
           />
         </div>
         <button
@@ -112,8 +112,10 @@ export default function AdminCustomers() {
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-3 text-red-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle size={16} />
+            </span>
             <p className="font-medium">{state.error}</p>
           </div>
           <button
@@ -127,7 +129,10 @@ export default function AdminCustomers() {
       )}
 
       {!state.loading && !state.error && list.length === 0 && (
-        <div className="flex flex-col items-start gap-2 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+        <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+            <Users size={16} strokeWidth={1.75} />
+          </span>
           <p className="font-display text-lg font-semibold text-black">No customers yet</p>
           <p className="max-w-md text-sm text-black/55">Anyone who creates an account on your storefront will show up here.</p>
         </div>
@@ -156,7 +161,7 @@ export default function AdminCustomers() {
                   <tr key={c.id ?? i} className="border-b border-black/5 last:border-0 hover:bg-[#f8f8f8]/60">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black font-display text-xs text-white">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-display text-xs font-semibold text-accent-ink">
                           {initialsOf(c.name, c.email)}
                         </span>
                         <div className="min-w-0">

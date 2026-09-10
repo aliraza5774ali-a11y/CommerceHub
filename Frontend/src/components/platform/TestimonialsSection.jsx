@@ -46,7 +46,7 @@ const TestimonialsSection = () => {
           className="flex flex-col items-center gap-4 text-center sm:gap-5"
         >
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-black/8 bg-black/[0.02] pl-1 pr-3 py-1 shadow-sm">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#cfff04]/20 text-black">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/20 text-black">
               <MessageCircleDashed size={13} />
             </span>
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/50">
@@ -69,7 +69,7 @@ const TestimonialsSection = () => {
             >
               <div className="flex items-center gap-0.5">
                 {Array.from({ length: 5 }).map((_, s) => (
-                  <Star key={s} size={13} fill="#cfff04" stroke="#cfff04" strokeWidth={0} />
+                  <Star key={s} size={13} fill="var(--color-accent)" stroke="var(--color-accent)" strokeWidth={0} />
                 ))}
               </div>
               <p className="text-sm leading-relaxed text-black/65">&ldquo;{t.quote}&rdquo;</p>

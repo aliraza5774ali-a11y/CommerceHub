@@ -26,7 +26,7 @@ const StorefrontShowcase = () => {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-black/8 bg-black/[0.02] py-1.5 pl-1.5 pr-3 shadow-sm">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#cfff04] text-black">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black">
               <LayoutTemplate size={12} strokeWidth={2.25} />
             </span>
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/55">
@@ -46,7 +46,7 @@ const StorefrontShowcase = () => {
           <ul className="mt-8 flex flex-col gap-4">
             {POINTS.map((point) => (
               <li key={point} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#cfff04]/15 text-[#cfff04]">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
                   <Check size={12} strokeWidth={3} />
                 </span>
                 <span className="text-sm leading-relaxed text-black/65">{point}</span>
@@ -111,7 +111,7 @@ const StorefrontShowcase = () => {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-[#cfff04]/10 blur-2xl" />
+          <div className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl bg-accent/10 blur-2xl" />
         </motion.div>
       </div>
     </section>

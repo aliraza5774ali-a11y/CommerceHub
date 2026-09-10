@@ -1,9 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { removeItem, setQuantity } from "../../store/slice/cartSlice";
 
 const CartSidebar = ({ isOpen, onClose }) => {
   const items = useSelector((state) => state.cart?.items) || [];
+  const dispatch = useDispatch();
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -67,6 +70,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
                           </p>
                           <button
                             aria-label="Remove item"
+                            onClick={() => dispatch(removeItem(item.id))}
                             className="text-gray-400 hover:text-gray-700"
                           >
                             <Trash2 size={16} />
@@ -81,6 +85,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
                           <div className="flex items-center gap-3 rounded-full border border-gray-200 px-2 py-1">
                             <button
                               aria-label="Decrease quantity"
+                              onClick={() => dispatch(setQuantity({ id: item.id, quantity: item.quantity - 1 }))}
                               className="text-gray-500 hover:text-gray-900"
                             >
                               <Minus size={14} />
@@ -90,6 +95,7 @@ const CartSidebar = ({ isOpen, onClose }) => {
                             </span>
                             <button
                               aria-label="Increase quantity"
+                              onClick={() => dispatch(setQuantity({ id: item.id, quantity: item.quantity + 1 }))}
                               className="text-gray-500 hover:text-gray-900"
                             >
                               <Plus size={14} />
@@ -114,9 +120,9 @@ const CartSidebar = ({ isOpen, onClose }) => {
                     ${subtotal.toFixed(2)}
                   </span>
                 </div>
-                <button className="w-full rounded-xl bg-gray-900 py-3 text-sm font-medium text-white transition hover:bg-gray-800">
-                  Checkout
-                </button>
+                <Link to="/cart" onClick={onClose} className="block w-full rounded-xl bg-gray-900 py-3 text-center text-sm font-medium text-white transition hover:bg-gray-800">
+                  View bag
+                </Link>
               </div>
             )}
           </motion.div>

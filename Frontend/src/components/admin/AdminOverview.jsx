@@ -3,7 +3,9 @@ import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
+  ArrowUpRight,
   Boxes,
+  Clock,
   Receipt,
   RefreshCw,
   Sparkle,
@@ -55,14 +57,35 @@ const SECONDARY_DEFS = [
   {
     key: "pendingOrders",
     label: "Pending orders",
+    icon: Clock,
+    tone: "neutral",
     aliases: ["pendingOrders", "pendingOrderCount", "pendingOrdersCount"],
   },
   {
     key: "lowStock",
     label: "Low stock items",
+    icon: AlertTriangle,
+    tone: "warning",
     aliases: ["lowStockCount", "lowStockItems", "lowStockProducts"],
   },
 ];
+
+// Maps common order/status strings to a visual tone. Falls back to neutral
+// for anything unrecognized, so an unfamiliar status from the API never
+// breaks the layout — it just renders plainly instead of guessing.
+function statusTone(status) {
+  const s = String(status || "").toLowerCase();
+  if (["paid", "completed", "delivered", "fulfilled", "success", "active"].some((k) => s.includes(k))) {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+  if (["pending", "processing", "awaiting", "in progress"].some((k) => s.includes(k))) {
+    return "border-accent/40 bg-accent/15 text-accent-ink";
+  }
+  if (["cancelled", "canceled", "failed", "refunded", "declined"].some((k) => s.includes(k))) {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+  return "border-black/10 bg-black/[0.03] text-black/60";
+}
 
 const RECENT_LIST_ALIASES = ["recentOrders", "latestOrders", "recentActivity", "activity"];
 
@@ -111,14 +134,15 @@ function StatCard({ icon: Icon, label, value, index }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col gap-4 rounded-2xl border border-black/8 bg-white p-6 shadow-sm"
+      className="soft-lift relative flex flex-col gap-4 overflow-hidden rounded-2xl border border-black/8 bg-white p-6 shadow-sm"
     >
-      <div className="flex items-center justify-between">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
+      <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-accent/15 blur-2xl" />
+      <div className="relative flex items-center justify-between">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-ink">
           <Icon size={16} strokeWidth={1.75} />
         </span>
       </div>
-      <div>
+      <div className="relative">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/45">{label}</p>
         <p className="mt-1.5 font-price text-3xl font-medium text-black">{value}</p>
       </div>
@@ -230,8 +254,10 @@ export default function AdminOverview() {
 
       {!loading && error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-3 text-red-700">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle size={16} />
+            </span>
             <p className="font-medium">{error}</p>
           </div>
           <button
@@ -256,22 +282,51 @@ export default function AdminOverview() {
 
           {secondary.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {secondary.map((s) => (
-                <div
-                  key={s.key}
-                  className="flex items-center justify-between rounded-2xl border border-black/8 bg-white px-6 py-5"
-                >
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/45">{s.label}</p>
-                  <p className="font-price text-xl font-medium text-black">{formatCount(s.value)}</p>
-                </div>
-              ))}
+              {secondary.map((s) => {
+                const Icon = s.icon;
+                const isWarning = s.tone === "warning" && s.value > 0;
+                return (
+                  <div
+                    key={s.key}
+                    className="soft-lift flex items-center justify-between gap-4 rounded-2xl border border-black/8 bg-white px-6 py-5"
+                  >
+                    <div className="flex items-center gap-3">
+                      {Icon && (
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                            isWarning ? "bg-amber-100 text-amber-700" : "bg-accent/15 text-accent-ink"
+                          }`}
+                        >
+                          <Icon size={15} strokeWidth={1.75} />
+                        </span>
+                      )}
+                      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/45">{s.label}</p>
+                    </div>
+                    <p className={`font-price text-xl font-medium ${isWarning ? "text-amber-700" : "text-black"}`}>
+                      {formatCount(s.value)}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {recentList && recentList.length > 0 && (
             <div className="rounded-2xl border border-black/8 bg-white p-6">
-              <h3 className="font-display text-lg font-semibold text-black">Recent activity</h3>
-              <div className="mt-4 overflow-x-auto">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-black">
+                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    Recent activity
+                  </h3>
+                  <p className="mt-1 text-sm text-black/45">Latest orders placed across your store.</p>
+                </div>
+                <span className="hidden items-center gap-1 rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-black/50 sm:inline-flex">
+                  Last {Math.min(recentList.length, 8)}
+                  <ArrowUpRight size={12} />
+                </span>
+              </div>
+              <div className="mt-5 overflow-x-auto">
                 <table className="w-full min-w-[520px] text-left text-sm">
                   <thead>
                     <tr className="border-b border-black/10 font-mono text-[10px] uppercase tracking-[0.14em] text-black/40">
@@ -285,13 +340,20 @@ export default function AdminOverview() {
                     {recentList.slice(0, 8).map((entry, i) => {
                       const f = activityFields(entry);
                       return (
-                        <tr key={f.id ?? i} className="border-b border-black/5 last:border-0">
+                        <tr
+                          key={f.id ?? i}
+                          className="border-b border-black/5 transition-colors duration-150 last:border-0 hover:bg-black/[0.02]"
+                        >
                           <td className="py-3 pr-4 font-price text-black/80">{String(f.id)}</td>
                           <td className="py-3 pr-4 text-black/70">{f.customer}</td>
                           <td className="py-3 pr-4 font-price text-black/80">{f.amount ?? "—"}</td>
                           <td className="py-3 pr-4">
                             {f.status ? (
-                              <span className="inline-flex items-center rounded-full border border-black/10 bg-[#f8f8f8] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-black/60">
+                              <span
+                                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] ${statusTone(
+                                  f.status
+                                )}`}
+                              >
                                 {f.status}
                               </span>
                             ) : (
@@ -335,7 +397,10 @@ export default function AdminOverview() {
 
 function EmptyOverview() {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+    <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-black/15 bg-white p-8">
+      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-accent-ink">
+        <Sparkle size={16} strokeWidth={1.75} />
+      </span>
       <p className="font-display text-lg font-semibold text-black">Nothing to show yet</p>
       <p className="max-w-md text-sm text-black/55">
         Your overview will populate here once your store has orders, products, and customers to report on.

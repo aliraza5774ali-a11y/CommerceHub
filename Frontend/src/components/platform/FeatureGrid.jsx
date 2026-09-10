@@ -78,7 +78,7 @@ const FeatureGrid = () => {
               transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               className="group soft-lift flex flex-col gap-4 rounded-3xl border border-black/8 bg-white p-7 shadow-sm transition-all duration-300 hover:border-black/15"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#cfff04]/20 text-black transition-colors duration-300 group-hover:bg-[#cfff04] group-hover:text-black">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/20 text-black transition-colors duration-300 group-hover:bg-accent group-hover:text-black">
                 {feature.icon}
               </span>
               <div>

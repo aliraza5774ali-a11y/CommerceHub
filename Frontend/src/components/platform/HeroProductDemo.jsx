@@ -105,7 +105,7 @@ const HeroProductDemo = () => {
           className="relative"
         >
           {/* border glow */}
-          <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-b from-[#cfff04]/20 to-transparent opacity-60 blur-[1px]" />
+          <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-b from-accent/20 to-transparent opacity-60 blur-[1px]" />
 
           <div className="relative overflow-hidden rounded-3xl border border-black/8 bg-white shadow-md">
             {/* window chrome */}

@@ -43,7 +43,7 @@ const TrustSection = () => {
               transition={{ duration: 0.5, delay: i * 0.06 }}
               className="inline-flex items-center gap-2 text-[13px] font-medium text-black/55"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#cfff04]/15 text-black">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-black">
                 {c.icon}
               </span>
               {c.label}

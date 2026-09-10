@@ -1,8 +1,10 @@
 import { pool } from '../../database/connection.js';
 
+const fields = 'id, name, slug, niche, theme_id AS themeId, status, settings, created_at AS createdAt, updated_at AS updatedAt';
+
 export const tenantRepository = {
   async list(connection = pool) {
-    const [rows] = await connection.execute('SELECT id, name, slug, status, settings, created_at AS createdAt, updated_at AS updatedAt FROM businesses ORDER BY created_at DESC');
+    const [rows] = await connection.execute(`SELECT ${fields} FROM businesses ORDER BY created_at DESC`);
     return rows;
   },
   async updateStatus(id, status, connection = pool) {
@@ -10,11 +12,14 @@ export const tenantRepository = {
     return result.affectedRows > 0 ? this.findById(id, connection) : null;
   },
   async findById(id, connection = pool) {
-    const [rows] = await connection.execute('SELECT id, name, slug, status, settings, created_at AS createdAt FROM businesses WHERE id = ?', [id]);
+    const [rows] = await connection.execute(`SELECT ${fields} FROM businesses WHERE id = ?`, [id]);
     return rows[0] || null;
   },
-  async create({ name, slug }, connection) {
-    const [result] = await connection.execute('INSERT INTO businesses (name, slug) VALUES (?, ?)', [name, slug]);
+  async create({ name, slug, niche, themeId }, connection) {
+    const [result] = await connection.execute(
+      'INSERT INTO businesses (name, slug, niche, theme_id) VALUES (?, ?, ?, ?)',
+      [name, slug, niche ?? null, themeId ?? 'classic']
+    );
     return this.findById(result.insertId, connection);
   }
 };

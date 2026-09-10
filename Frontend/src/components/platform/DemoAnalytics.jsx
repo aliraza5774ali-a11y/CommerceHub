@@ -24,7 +24,7 @@ const DemoAnalytics = ({ isActive }) => {
         {BARS.map((h, i) => (
           <div key={i} className="flex-1 overflow-hidden rounded-sm bg-black/[0.05]">
             <div
-              className="w-full rounded-sm bg-gradient-to-t from-[#cfff04]/40 to-[#cfff04] transition-[height] duration-[1400ms] ease-out"
+              className="w-full rounded-sm bg-gradient-to-t from-accent/40 to-accent transition-[height] duration-[1400ms] ease-out"
               style={{ height: isActive ? `${h}%` : "0%", transitionDelay: `${i * 60}ms` }}
             />
           </div>

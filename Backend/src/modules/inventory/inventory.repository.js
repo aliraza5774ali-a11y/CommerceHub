@@ -1,6 +1,18 @@
 import { pool, withTransaction } from '../../database/connection.js';
 
 export const inventoryRepository = {
+  async listForTenant(tenantId, connection = pool) {
+    const [rows] = await connection.execute(
+      `SELECT p.id AS productId, p.name, p.sku, p.status,
+              i.quantity, i.reserved_quantity AS reservedQuantity, i.version
+       FROM products p
+       LEFT JOIN inventory i ON i.product_id = p.id AND i.business_id = p.business_id
+       WHERE p.business_id = ?
+       ORDER BY p.name`,
+      [tenantId]
+    );
+    return rows;
+  },
   async get(productId, tenantId, connection = pool) {
     const [rows] = await connection.execute('SELECT product_id AS productId, quantity, reserved_quantity AS reservedQuantity, version FROM inventory WHERE product_id = ? AND business_id = ? LIMIT 1', [productId, tenantId]);
     return rows[0] || null;
