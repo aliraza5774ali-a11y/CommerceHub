@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, RefreshCw, Settings as SettingsIcon } from "lucide-react";
+import { AlertTriangle, Check, Loader2, RefreshCw, Settings as SettingsIcon } from "lucide-react";
 import { api } from "../../api/commerceApi";
+import { themeOptions } from "../../api/authApi";
 import { getApiErrorMessage } from "../../api/apiError";
 import SectionHeader from "../SectionHeader";
+import { useTenant } from "../TenantProvider";
 
 const errorText = (error) => getApiErrorMessage(error, "Couldn't load settings. Please try again.");
 
@@ -37,7 +39,94 @@ function SettingValue({ value }) {
   return <span className="font-price text-sm text-black/85">{displayValue(value)}</span>;
 }
 
+function ThemeSection({ theme, onApplied, onTemplateChanged }) {
+  const [templates, setTemplates] = useState([]);
+  const [applyingId, setApplyingId] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    themeOptions()
+      .then((options) => setTemplates(Array.isArray(options) ? options : []))
+      .catch(() => setTemplates([]));
+  }, []);
+
+  const currentId = theme?.templateId || null;
+
+  const apply = async (template) => {
+    setApplyingId(template.id);
+    setError("");
+    try {
+      await api.updateTheme({
+        version: theme?.version,
+        templateId: template.id,
+      });
+      await onTemplateChanged();
+      onApplied();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setApplyingId(null);
+    }
+  };
+
+  if (!templates.length) return null;
+
+  return (
+    <div className="rounded-2xl border border-black/8 bg-white p-6">
+      <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-black">
+        <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+        Store template
+      </h3>
+      <p className="mt-1.5 text-sm text-black/50">
+        Switch between the two storefront layouts. Your homepage, pages and footer content stay exactly as you edit them in CMS.
+      </p>
+
+      <div className="mt-5 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+        {templates.map((template) => {
+          const selected = currentId === template.id;
+          const busy = applyingId === template.id;
+          return (
+            <button
+              key={template.id}
+              onClick={() => apply(template)}
+              disabled={applyingId !== null}
+              className={`flex flex-col gap-2.5 rounded-2xl border p-3 text-left transition-all duration-200 disabled:opacity-60 ${
+                selected ? "border-black shadow-sm" : "border-black/10 hover:border-black/25"
+              }`}
+            >
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#f2f2f2]">
+                <img
+                  src={template.previewImage}
+                  alt={`${template.label} template preview`}
+                  className="h-full w-full object-cover"
+                />
+                {busy && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                    <Loader2 size={16} className="animate-spin text-black/60" />
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-black">{template.label}</span>
+                {selected && (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-black">
+                    <Check size={10} strokeWidth={3} />
+                  </span>
+                )}
+              </div>
+              <p className="-mt-1 text-xs leading-relaxed text-black/50">{template.description}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
 export default function AdminSettings() {
+  const { refreshTenant } = useTenant();
   const [state, setState] = useState({ loading: true, data: null, error: null });
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -64,7 +153,7 @@ export default function AdminSettings() {
 
   const nestedGroups = useMemo(() => {
     if (!state.data || typeof state.data !== "object") return [];
-    return Object.entries(state.data).filter(([, v]) => v && typeof v === "object" && !Array.isArray(v));
+    return Object.entries(state.data).filter(([k, v]) => k !== "theme" && v && typeof v === "object" && !Array.isArray(v));
   }, [state.data]);
 
   return (
@@ -82,6 +171,8 @@ export default function AdminSettings() {
       </div>
 
       {state.loading && <SettingsSkeleton />}
+
+      {!state.loading && !state.error && <ThemeSection theme={state.data?.theme} onApplied={refresh} onTemplateChanged={refreshTenant} />}
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">

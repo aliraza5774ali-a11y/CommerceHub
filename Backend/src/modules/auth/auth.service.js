@@ -62,6 +62,7 @@ export const authService = {
     const result = await withTransaction(async (connection) => {
       let tenant;
       let roleId = null;
+      let pendingDomain = null;
       if (tenantContext) {
         tenant = tenantContext;
       } else {
@@ -69,6 +70,14 @@ export const authService = {
         const themeId = resolveThemeId(input.themeId);
         tenant = await tenantRepository.create({ name: input.storeName, slug, niche: input.niche, themeId }, connection);
         await domainRepository.create({ businessId: tenant.id, host: `${slug}.${env.ROOT_DOMAIN}` }, connection);
+
+        // The store is live immediately on its platform subdomain. If the
+        // owner also gave us their own domain, register it as a pending
+        // custom domain now — it becomes primary once they point its DNS at
+        // us and verify it (see /domains routes / Admin > Domains).
+        if (input.customDomain) {
+          pendingDomain = await domainRepository.createDomain({ tenantId: tenant.id, host: input.customDomain, domainType: 'custom' }, connection);
+        }
 
         // Seed initial business settings so the admin panel never renders on an
         // empty settings object, and apply the chosen starter template's colors.
@@ -87,9 +96,9 @@ export const authService = {
         roleId = roles[0]?.id;
       }
       const user = await authRepository.createUser({ tenantId: tenant.id, email: input.email, passwordHash, firstName: input.firstName, lastName: input.lastName, roleId }, connection);
-      return { tenant, user };
+      return { tenant, user, pendingDomain };
     });
-    return this.issueSession(result.user);
+    return { ...(await this.issueSession(result.user)), pendingDomain: result.pendingDomain };
   },
 
   // Storefront customer login stays tenant-scoped and single-step: the domain

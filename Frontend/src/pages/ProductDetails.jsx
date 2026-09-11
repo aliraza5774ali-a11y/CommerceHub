@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
@@ -11,7 +11,8 @@ import {
   Truck,
   RotateCcw,
 } from "lucide-react";
-import { products } from "../data/products";
+import { api } from "../api/commerceApi";
+import { toDisplayProduct } from "../utils/productDisplay";
 import { addItem } from "../store/slice/cartSlice";
 import { openCart } from "../store/slice/Uislice";
 
@@ -75,9 +76,37 @@ const ProductDetails = ({
   const { slug } = useParams();
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
-  const product = products.find((item) => item.slug === slug);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setActiveImage(0);
+    api
+      .publicProduct(slug)
+      .then((item) => {
+        if (active) setProduct(toDisplayProduct(item));
+      })
+      .catch(() => {
+        if (active) setProduct(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <section className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-[#fafaf9]">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-black/10 border-t-black" />
+      </section>
+    );
+  }
 
   if (!product) {
     return (

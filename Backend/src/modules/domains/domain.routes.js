@@ -11,7 +11,10 @@ import { z } from 'zod';
 import { success } from '../../utils/apiResponse.js';
 
 export const domainRoutes = Router();
-domainRoutes.get('/resolve', resolveTenant, (req, res) => success(res, req.tenant));
+domainRoutes.get('/resolve', resolveTenant, (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  success(res, req.tenant);
+});
 domainRoutes.get('/', authenticate, resolveTenantFromAuth, requireStaff, asyncHandler(async (req, res) => success(res, await domainRepository.list(req.tenant.id))));
 domainRoutes.post('/', authenticate, resolveTenantFromAuth, requireStaff, validate(z.object({ host: z.string().min(3).max(255), domainType: z.enum(['subdomain', 'custom']) })), asyncHandler(async (req, res) => success(res, await domainRepository.createDomain({ tenantId: req.tenant.id, ...req.body }), 201)));
 domainRoutes.patch('/:id/primary', authenticate, resolveTenantFromAuth, requireStaff, asyncHandler(async (req, res) => success(res, await withTransaction((connection) => domainRepository.setPrimary(req.params.id, req.tenant.id, connection)))));

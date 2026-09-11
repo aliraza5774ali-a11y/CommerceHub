@@ -14,7 +14,18 @@ export const catalogManagementRepository = {
   async deleteVariant(id, tenantId, connection = pool) { const [result] = await connection.execute('DELETE FROM product_variants WHERE id = ? AND business_id = ?', [id, tenantId]); return result.affectedRows > 0; },
   async attributes(tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, name FROM product_attributes WHERE business_id = ? ORDER BY name', [tenantId]); return rows; },
   async createAttribute(name, tenantId, connection = pool) { const [result] = await connection.execute('INSERT INTO product_attributes (business_id, name) VALUES (?, ?)', [tenantId, name]); const [rows] = await connection.execute('SELECT id, name FROM product_attributes WHERE id = ?', [result.insertId]); return rows[0]; },
-  async images(productId, tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, variant_id AS variantId, media_id AS mediaId, image_url AS imageUrl, alt_text AS altText, sort_order AS sortOrder, is_primary AS isPrimary FROM product_images WHERE product_id = ? AND business_id = ? ORDER BY sort_order, id', [productId, tenantId]); return rows; },
+  // The primary image is always first, so "which image shows on the storefront"
+  // is unambiguous everywhere this list is read (admin editor and public API).
+  async images(productId, tenantId, connection = pool) { const [rows] = await connection.execute('SELECT id, variant_id AS variantId, media_id AS mediaId, image_url AS imageUrl, alt_text AS altText, sort_order AS sortOrder, is_primary AS isPrimary FROM product_images WHERE product_id = ? AND business_id = ? ORDER BY is_primary DESC, sort_order, id', [productId, tenantId]); return rows; },
   async addImage(productId, input, tenantId, connection = pool) { if (input.isPrimary) await connection.execute('UPDATE product_images SET is_primary = FALSE WHERE product_id = ? AND business_id = ?', [productId, tenantId]); const [result] = await connection.execute('INSERT INTO product_images (business_id, product_id, variant_id, media_id, image_url, alt_text, sort_order, is_primary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [tenantId, productId, input.variantId || null, input.mediaId || null, input.imageUrl, input.altText || null, input.sortOrder || 0, Boolean(input.isPrimary)]); return this.images(productId, tenantId, connection).then((rows) => rows.find((row) => row.id === result.insertId)); },
-  async deleteImage(id, tenantId, connection = pool) { const [result] = await connection.execute('DELETE FROM product_images WHERE id = ? AND business_id = ?', [id, tenantId]); return result.affectedRows > 0; }
+  async deleteImage(id, tenantId, connection = pool) { const [result] = await connection.execute('DELETE FROM product_images WHERE id = ? AND business_id = ?', [id, tenantId]); return result.affectedRows > 0; },
+  // Lets an admin change which of a product's (up to 3) images is used as
+  // its cover/home-page image, without deleting and re-adding it.
+  async setPrimaryImage(id, tenantId, connection = pool) {
+    const [rows] = await connection.execute('SELECT product_id AS productId FROM product_images WHERE id = ? AND business_id = ?', [id, tenantId]);
+    if (!rows[0]) return null;
+    await connection.execute('UPDATE product_images SET is_primary = FALSE WHERE product_id = ? AND business_id = ?', [rows[0].productId, tenantId]);
+    await connection.execute('UPDATE product_images SET is_primary = TRUE WHERE id = ? AND business_id = ?', [id, tenantId]);
+    return this.images(rows[0].productId, tenantId, connection);
+  }
 };

@@ -5,6 +5,7 @@ import blog1 from "../assets/blog_01.avif";
 import blog2 from "../assets/blog_02.avif";
 import blog3 from "../assets/blog_03.avif";
 import BlogCard from "../components/BlogCard";
+import { useCmsHero } from "../utils/useCmsHero";
 
 const CATEGORIES = ["All Blogs", "Style Guide", "Fashion Tips", "Brand Stories"];
 
@@ -21,6 +22,7 @@ const BLOGS = [
 ];
 
 const Blog = () => {
+  const hero = useCmsHero("blog");
   const [active, setActive] = useState("All Blogs");
 
   const filtered = useMemo(() => {
@@ -37,12 +39,12 @@ const Blog = () => {
     <div className="bg-[#f8f8f8]">
            <HeroSection
   mode="blog"
-  image={blogHero}
-  badge={{ label: "Shop", text: "Curated for you" }}
-  heading="Find your perfect fit"
-  subtext="Browse our latest arrivals and timeless classics"
-  primaryLabel="New Arrivals"
-  secondaryLabel="Best Sellers"
+  image={hero.image || blogHero}
+  badge={{ label: hero.badgeLabel, text: hero.badgeText }}
+  heading={hero.heading}
+  subtext={hero.subtext}
+  primaryLabel={hero.primaryLabel}
+  secondaryLabel={hero.secondaryLabel}
 />
 
       <section className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 sm:py-10 md:px-8 md:py-12 lg:px-12 lg:py-16 xl:px-20 2xl:px-28">

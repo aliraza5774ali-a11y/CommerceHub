@@ -5,17 +5,21 @@ import CollectionStory from "../components/sections/CollectionStory";
 import CollectionCard from "../components/sections/CollectionCard";
 import ProductSection from "../components/sections/ProductSection";
 import { useNavigate } from "react-router-dom";
+import { useCmsHero } from "../utils/useCmsHero";
 
 const Collection = () => {
   const navigate = useNavigate()
+  const hero = useCmsHero("collections");
   return (
     <div className="bg-[#f8f8f8]">
       <HeroSection
   mode="collection"
-  image={hero01}
-  heading="The Essentials"
-  subtext="Minimal pieces for maximum impact"
-  primaryLabel="View All"
+  image={hero.image || hero01}
+  badge={hero.badgeLabel ? { label: hero.badgeLabel, text: hero.badgeText } : undefined}
+  heading={hero.heading}
+  subtext={hero.subtext}
+  primaryLabel={hero.primaryLabel}
+  primaryLink={hero.primaryLink}
 />
 
       <CollectionStory />

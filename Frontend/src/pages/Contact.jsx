@@ -4,6 +4,7 @@ import hero01 from "../assets/contactHero.avif";
 import contactSide from "../assets/contactSide.avif";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { BsFacebook, BsInstagram, BsTwitter } from "react-icons/bs";
+import { useCmsHero } from "../utils/useCmsHero";
 
 const FAQS = [
   { q: "How long does shipping take?", a: "Standard shipping takes 5–7 business days. Express shipping (2–3 days) is available at checkout." },
@@ -21,6 +22,7 @@ const INFO = [
 ];
 
 const Contact = () => {
+  const hero = useCmsHero("contact");
   const [openFaq, setOpenFaq] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
 
@@ -30,12 +32,12 @@ const Contact = () => {
     <div className="bg-white">
       <HeroSection
   mode="contact"
-  image={hero01}
-  badge={{ label: "Hello", text: "We'd love to hear from you" }}
-  heading="Let's start a conversation"
-  subtext="Have a question, collaboration idea, or just want to say hi? Our team is here to help."
-  primaryLabel="Send a Message"
-  secondaryLabel="Visit Our Store"
+  image={hero.image || hero01}
+  badge={{ label: hero.badgeLabel, text: hero.badgeText }}
+  heading={hero.heading}
+  subtext={hero.subtext}
+  primaryLabel={hero.primaryLabel}
+  secondaryLabel={hero.secondaryLabel}
 />
 
       <section className="bg-[#FAFAF7] px-4 py-10 sm:px-6 sm:py-12 md:px-8 md:py-16 lg:px-12 lg:py-20 xl:px-20 2xl:px-28">

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Check, Copy, Globe2, RefreshCw } from "lucide-react";
+import { AlertTriangle, Check, Copy, Globe2, Loader2, Plus, RefreshCw, ShieldCheck, Star, Trash2, X } from "lucide-react";
 import { api } from "../../api/commerceApi";
 import { getApiErrorMessage } from "../../api/apiError";
 import SectionHeader from "../SectionHeader";
@@ -48,6 +48,12 @@ export default function AdminDomains() {
   const [state, setState] = useState({ loading: true, data: null, error: null });
   const [refreshKey, setRefreshKey] = useState(0);
   const [copied, setCopied] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newHost, setNewHost] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState("");
+  const [justCreated, setJustCreated] = useState(null); // { id, host, verificationToken }
+  const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,11 +86,74 @@ export default function AdminDomains() {
     }
   };
 
+  const addDomain = async () => {
+    const host = newHost.trim().toLowerCase();
+    if (!host) return;
+    setAdding(true);
+    setAddError("");
+    try {
+      const created = await api.addDomain({ host, domainType: "custom" });
+      setJustCreated(created);
+      setNewHost("");
+      setShowAdd(false);
+      refresh();
+    } catch (e) {
+      setAddError(errorText(e));
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const verify = async (id) => {
+    if (!justCreated?.verificationToken || justCreated.id !== id) return;
+    setBusyId(id);
+    try {
+      await api.verifyDomain(id, justCreated.verificationToken);
+      setJustCreated(null);
+      refresh();
+    } catch (e) {
+      setAddError(errorText(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const setPrimary = async (id) => {
+    setBusyId(id);
+    try {
+      await api.setPrimaryDomain(id);
+      refresh();
+    } catch (e) {
+      setAddError(errorText(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const remove = async (id) => {
+    setBusyId(id);
+    try {
+      await api.deleteDomain(id);
+      refresh();
+    } catch (e) {
+      setAddError(errorText(e));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <SectionHeader badge="Admin · Owner" icon={<Globe2 size={12} strokeWidth={2} />} heading="Domains" />
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowAdd((s) => !s)}
+          className="inline-flex w-fit items-center gap-1.5 rounded-full bg-black px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-white transition hover:bg-neutral-800"
+        >
+          {showAdd ? <X size={13} /> : <Plus size={13} />}
+          {showAdd ? "Cancel" : "Add domain"}
+        </button>
         <button
           onClick={refresh}
           className="inline-flex w-fit items-center gap-1.5 rounded-full border border-black/10 bg-white px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-black/60 transition hover:border-black/20 hover:text-black"
@@ -93,6 +162,62 @@ export default function AdminDomains() {
           Refresh
         </button>
       </div>
+
+      {showAdd && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-white p-5">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-black/60">Domain (e.g. yourbrand.com — no http:// or www)</span>
+            <input
+              value={newHost}
+              onChange={(e) => setNewHost(e.target.value)}
+              placeholder="yourbrand.com"
+              className="rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black outline-none focus:border-black/40"
+            />
+          </label>
+          {addError && <p className="text-sm text-red-600">{addError}</p>}
+          <button
+            onClick={addDomain}
+            disabled={adding || !newHost.trim()}
+            className="flex w-fit items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-50"
+          >
+            {adding && <Loader2 size={14} className="animate-spin" />}
+            Add domain
+          </button>
+        </div>
+      )}
+
+      {justCreated && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <p className="text-sm font-semibold text-black">Verify {justCreated.host}</p>
+          <p className="text-xs leading-relaxed text-black/60">
+            Point this domain's DNS at us, then add a TXT record with the token below and verify — this token is
+            only shown once, so verify now or copy it somewhere safe.
+          </p>
+          <div className="flex flex-col gap-2 text-xs">
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 font-mono">
+              <span className="truncate">CNAME @ → storefront.commercehub.com</span>
+            </div>
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 font-mono">
+              <span className="truncate">TXT commercehub-verify = {justCreated.verificationToken}</span>
+              <button
+                onClick={() => copy(justCreated.verificationToken, "token")}
+                className="flex shrink-0 items-center gap-1 rounded-full bg-black/5 px-2 py-1 text-[11px] font-medium text-black/60 hover:bg-black/10"
+              >
+                <Copy size={11} />
+                {copied === "token" ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={() => verify(justCreated.id)}
+            disabled={busyId === justCreated.id}
+            className="flex w-fit items-center gap-2 rounded-full bg-black px-4 py-2 text-xs font-medium text-white hover:bg-black/90 disabled:opacity-50"
+          >
+            {busyId === justCreated.id ? <Loader2 size={13} className="animate-spin" /> : <ShieldCheck size={13} />}
+            I've added the DNS record — verify now
+          </button>
+        </div>
+      )}
 
       {state.loading && <DomainsSkeleton />}
 
@@ -151,25 +276,41 @@ export default function AdminDomains() {
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => copy(d.host, d.id ?? i)}
-                className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition ${
-                  copied === (d.id ?? i)
-                    ? "border-accent/40 bg-accent/15 text-accent-ink"
-                    : "border-black/10 text-black/60 hover:border-black/25 hover:text-black"
-                }`}
-              >
-                {copied === (d.id ?? i) ? <Check size={13} /> : <Copy size={13} />}
-                {copied === (d.id ?? i) ? "Copied" : "Copy"}
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                {!d.primary && d.verified === true && (
+                  <button
+                    onClick={() => setPrimary(d.id)}
+                    disabled={busyId === d.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-black/10 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-black/60 hover:border-black/25 hover:text-black disabled:opacity-50"
+                  >
+                    <Star size={12} /> Make primary
+                  </button>
+                )}
+                {!d.primary && (
+                  <button
+                    onClick={() => remove(d.id)}
+                    disabled={busyId === d.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <Trash2 size={12} /> Remove
+                  </button>
+                )}
+                <button
+                  onClick={() => copy(d.host, d.id ?? i)}
+                  className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] transition ${
+                    copied === (d.id ?? i)
+                      ? "border-accent/40 bg-accent/15 text-accent-ink"
+                      : "border-black/10 text-black/60 hover:border-black/25 hover:text-black"
+                  }`}
+                >
+                  {copied === (d.id ?? i) ? <Check size={13} /> : <Copy size={13} />}
+                  {copied === (d.id ?? i) ? "Copied" : "Copy"}
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
-
-      <p className="text-xs text-black/35">
-        Connecting a new custom domain isn't available yet — this view will support it once the domains API supports creation.
-      </p>
     </div>
   );
 }

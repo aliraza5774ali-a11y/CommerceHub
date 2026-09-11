@@ -10,7 +10,15 @@ import { authorize, requireStaff } from '../../middleware/authorize.middleware.j
 import { AppError, assertFound } from '../../utils/errors.js';
 import { catalogService } from './catalog.service.js';
 
-const productSchema = z.object({ name: z.string().trim().min(2).max(160), slug: z.string().regex(/^[a-z0-9-]+$/).min(2).max(160), description: z.string().max(5000).optional(), price: z.coerce.number().nonnegative(), salePrice: z.coerce.number().nonnegative().nullable().optional(), sku: z.string().trim().max(80).optional() });
+const productSchema = z.object({
+  name: z.string().trim().min(2).max(160),
+  slug: z.string().regex(/^[a-z0-9-]+$/).min(2).max(160),
+  description: z.string().max(5000).optional(),
+  price: z.coerce.number().nonnegative(),
+  salePrice: z.coerce.number().nonnegative().nullable().optional(),
+  sku: z.string().trim().max(80).optional(),
+  categoryId: z.coerce.number().int().positive().nullable().optional()
+});
 const updateSchema = productSchema.extend({ version: z.coerce.number().int().nonnegative() });
 
 export const catalogRoutes = Router();

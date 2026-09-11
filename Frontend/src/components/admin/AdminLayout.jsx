@@ -15,6 +15,7 @@ import {
   X,
   ChevronRight,
   Store,
+  LayoutTemplate,
 } from "lucide-react";
 import { logout } from "../../api/authApi";
 import { sessionCleared } from "../../features/auth/authSlice";
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { label: "Categories", to: "/admin/categories", icon: FolderTree, roles: ["Owner", "Admin", "Staff"] },
   { label: "Inventory", to: "/admin/inventory", icon: Boxes, roles: ["Owner", "Admin", "Staff"] },
   { label: "Orders", to: "/admin/orders", icon: Receipt, roles: ["Owner", "Admin", "Staff"] },
+  { label: "Pages", to: "/admin/pages", icon: LayoutTemplate, roles: ["Owner", "Admin"] },
   { label: "Customers", to: "/admin/customers", icon: Users, roles: ["Owner", "Admin", "Staff"] },
   { label: "Domains", to: "/admin/domains", icon: Globe2, roles: ["Owner"] },
   { label: "Settings", to: "/admin/settings", icon: Settings, roles: ["Owner"] },

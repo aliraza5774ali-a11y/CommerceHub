@@ -24,6 +24,10 @@ export { default as AccountProfile } from "../components/account/AccountProfile"
 export { default as AdminLayout } from "../components/admin/AdminLayout";
 export { default as AdminOverview } from "../components/admin/AdminOverview";
 export { default as AdminProducts } from "../components/admin/AdminProducts";
+export { default as AdminHomepage } from "../components/admin/AdminHomepage";
+export { default as AdminPagesList } from "../components/admin/AdminPagesList";
+export { default as AdminPageEditor } from "../components/admin/AdminPageEditor";
+export { default as AdminFooter } from "../components/admin/AdminFooter";
 export { default as AdminCategories } from "../components/admin/AdminCategories";
 export { default as AdminInventory } from "../components/admin/AdminInventory";
 export { default as AdminOrders } from "../components/admin/AdminOrders";

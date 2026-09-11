@@ -21,5 +21,9 @@ export const tenantRepository = {
       [name, slug, niche ?? null, themeId ?? 'classic']
     );
     return this.findById(result.insertId, connection);
+  },
+  async updateThemeId(id, themeId, connection = pool) {
+    const [result] = await connection.execute('UPDATE businesses SET theme_id = ? WHERE id = ?', [themeId, id]);
+    return result.affectedRows > 0 ? this.findById(id, connection) : null;
   }
 };

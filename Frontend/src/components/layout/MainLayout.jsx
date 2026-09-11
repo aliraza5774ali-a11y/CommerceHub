@@ -1,10 +1,13 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { useTenant } from "../TenantProvider";
 
 const MainLayout = () => {
+  const { tenant } = useTenant();
+  const templateId = tenant?.themeId || "classic";
   return (
-    <div className="bg-[#fafaf9]">
+    <div className={`storefront-template storefront-template--${templateId}`}>
       <Navbar />
       <main>
         <Outlet />

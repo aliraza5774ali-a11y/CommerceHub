@@ -48,15 +48,14 @@ const COUNTRY_OPTIONS = [
 // Fallback templates shown before /auth/theme-options resolves, or if the
 // request fails — keeps the picker usable without blocking on the network.
 const FALLBACK_TEMPLATES = [
-  { id: "classic", label: "Classic", accentColor: "#cfff04", backgroundColor: "#ffffff" },
-  { id: "boutique", label: "Boutique", accentColor: "#d98c4a", backgroundColor: "#fffaf4" },
-  { id: "bold", label: "Bold", accentColor: "#ff3d3d", backgroundColor: "#0a0a0a" },
-  { id: "minimal", label: "Minimal", accentColor: "#2563eb", backgroundColor: "#ffffff" },
+  { id: "classic", label: "Classic", description: "A bold, image-led storefront with a floating navigation bar.", previewImage: "/template-previews/classic-storefront.svg" },
+  { id: "editorial", label: "Editorial", description: "A refined magazine-style storefront with serif typography and warm surfaces.", previewImage: "/template-previews/editorial-storefront.svg" },
 ];
 
 const FIELDS = [
   { key: "storeName", label: "Business name", icon: Store, placeholder: "Ali Tech", span: true },
-  { key: "storeSlug", label: "Store slug", icon: Sparkles, placeholder: "ali-tech", hint: "This becomes your storefront address." },
+  { key: "storeSlug", label: "Store slug", icon: Sparkles, placeholder: "ali-tech", hint: "Your store works here immediately, e.g. ali-tech.commercehub.com" },
+  { key: "customDomain", label: "Your domain (optional)", icon: Globe2, placeholder: "alitech.com", span: true, required: false, hint: "Already own a domain? Add it now — point its DNS at us afterward and it becomes your store's main address." },
   { key: "phone", label: "Phone", icon: Phone, placeholder: "+92 300 1234567" },
   { key: "firstName", label: "Owner first name", icon: User, placeholder: "Ali" },
   { key: "lastName", label: "Owner last name", icon: User, placeholder: "Khan" },
@@ -81,7 +80,7 @@ function InputField({ field, value, onChange }) {
           className="pointer-events-none absolute left-3.5 text-black/35 transition-colors duration-200 group-focus-within:text-black"
         />
         <input
-          required
+          required={field.required !== false}
           value={value}
           type={type}
           pattern={pattern}
@@ -129,7 +128,7 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
       <div>
         <span className="text-[13px] font-medium text-black/70">Choose a starter template</span>
         <p className="mt-1 text-xs text-black/40">
-          You can restyle everything later from your theme settings — this just sets the starting point.
+          Choose the storefront layout you want. Your pages, products and CMS content stay editable after launch.
         </p>
       </div>
 
@@ -141,17 +140,15 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
               type="button"
               key={template.id}
               onClick={() => onSelect(template.id)}
-              className={`flex flex-col gap-3 rounded-2xl border p-4 text-left transition-all duration-200 ${
+              className={`flex flex-col gap-3 rounded-2xl border p-3 text-left transition-all duration-200 ${
                 isSelected ? "border-black shadow-sm" : "border-black/10 hover:border-black/25"
               }`}
             >
-              <div
-                className="flex h-16 w-full items-center justify-center rounded-xl"
-                style={{ backgroundColor: template.backgroundColor }}
-              >
-                <span
-                  className="h-6 w-6 rounded-full"
-                  style={{ backgroundColor: template.accentColor }}
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#f2f2f2]">
+                <img
+                  src={template.previewImage}
+                  alt={`${template.label} template preview`}
+                  className="h-full w-full object-cover"
                 />
               </div>
               <div className="flex items-center justify-between">
@@ -162,6 +159,7 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
                   </span>
                 )}
               </div>
+              <p className="-mt-1 text-xs leading-relaxed text-black/45">{template.description}</p>
             </button>
           );
         })}
@@ -198,16 +196,16 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
   );
 }
 
-function SuccessScreen({ storeName, storeSlug }) {
+function SuccessScreen({ storeName, storeSlug, pendingDomain }) {
   const host = `${storeSlug}.localhost`;
   const url = `http://${host}:5173`;
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(null);
 
-  const copyUrl = async () => {
+  const copy = async (text, key) => {
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied(null), 1800);
     } catch {
       /* clipboard not available — ignore */
     }
@@ -234,15 +232,45 @@ function SuccessScreen({ storeName, storeSlug }) {
           </span>
           <button
             type="button"
-            onClick={copyUrl}
+            onClick={() => copy(url, "sub")}
             aria-label="Copy store URL"
             className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full bg-black/5 px-3 py-1.5 text-xs font-medium text-black/60 transition hover:bg-black/10"
           >
             <Copy size={13} />
-            {copied ? "Copied" : "Copy"}
+            {copied === "sub" ? "Copied" : "Copy"}
           </button>
         </div>
       </div>
+
+      {pendingDomain && (
+        <div className="mt-4 w-full rounded-2xl border border-amber-200 bg-amber-50 p-5 text-left">
+          <p className="text-sm font-semibold text-black">
+            Connect {pendingDomain.host}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-black/55">
+            Your store is live on the address above right now. To make{" "}
+            <span className="font-medium text-black/70">{pendingDomain.host}</span>{" "}
+            work too, add these DNS records with your domain provider, then
+            verify it from Admin → Domains:
+          </p>
+          <div className="mt-3 flex flex-col gap-2 text-xs">
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 font-mono">
+              <span className="truncate">CNAME @ → storefront.commercehub.com</span>
+            </div>
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 font-mono">
+              <span className="truncate">TXT commercehub-verify = {pendingDomain.verificationToken}</span>
+              <button
+                type="button"
+                onClick={() => copy(pendingDomain.verificationToken, "token")}
+                className="flex shrink-0 items-center gap-1 rounded-full bg-black/5 px-2 py-1 text-[11px] font-medium text-black/60 hover:bg-black/10"
+              >
+                <Copy size={11} />
+                {copied === "token" ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <a
         href={url}
@@ -267,6 +295,7 @@ const OpenStorePage = () => {
   const [form, setForm] = useState({
     storeName: "",
     storeSlug: "",
+    customDomain: "",
     phone: "",
     firstName: "",
     lastName: "",
@@ -301,7 +330,9 @@ const OpenStorePage = () => {
     setSubmitting(true);
     setError("");
     try {
-      const response = await register(form);
+      const payload = { ...form };
+      if (!payload.customDomain?.trim()) delete payload.customDomain;
+      const response = await register(payload);
       setResult(response);
     } catch (e2) {
       setError(errorText(e2));
@@ -315,7 +346,7 @@ const OpenStorePage = () => {
       <PlatformNavbar />
 
       {result ? (
-        <SuccessScreen storeName={form.storeName} storeSlug={form.storeSlug} />
+        <SuccessScreen storeName={form.storeName} storeSlug={form.storeSlug} pendingDomain={result.pendingDomain} />
       ) : (
         <main className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-12 px-4 pb-24 pt-32 sm:px-6 sm:pt-36 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:px-10 lg:pt-40">
           {/* Left: framing copy */}

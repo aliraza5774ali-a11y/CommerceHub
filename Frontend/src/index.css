@@ -2,8 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* Storefront theme (see src/theme/applyTheme.js): the tenant's saved
+   store_themes row is applied at runtime by setting these custom properties
+   on :root. Falls back to the original hardcoded design-system values when
+   no theme has loaded yet (platform pages, first paint, fetch failure). */
 body {
-  background: #fafaf9;
+  background: var(--store-bg, #fafaf9);
+  color: var(--store-text, inherit);
 }
 
 /* Calibrate low-contrast light-surface borders without changing dark media controls. */
@@ -20,9 +25,10 @@ body {
   border-color: rgb(0 0 0 / 0.16) !important;
 }
 
-/* Keep existing card structure, but give the whole product a softer radius. */
+/* Keep existing card structure, but give the whole product a softer radius —
+   themeable via --store-radius (store_themes.borderRadius). */
 :where(.rounded-2xl) {
-  border-radius: 1.25rem;
+  border-radius: var(--store-radius, 1.25rem);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -48,18 +54,30 @@ body {
 }
 
 @theme {
-  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif; /* hero, card, section headings */
-  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;   /* body / context text */
+  --font-display: var(--store-font, "Poppins", ui-sans-serif, system-ui, sans-serif); /* hero, card, section headings */
+  --font-sans: var(--store-font, "Poppins", ui-sans-serif, system-ui, sans-serif);   /* body / context text */
   --font-mono: "Space Mono", ui-monospace, monospace;            /* tags, labels, badges */
   --font-price: "Geist Mono", ui-monospace, monospace;            /* prices, dashboard numerals */
 
-  /* Single source of truth for the brand accent (lime). Every component should
-     reference bg-accent / text-accent / border-accent / ring-accent instead of
-     the raw hex, so the color only ever needs to change in one place. */
-  --color-accent: #cfff04;
-  --color-accent-dark: #a8d400; /* hover/active shade, same hue, darker for contrast on white */
+  /* Single source of truth for the brand accent (lime by default). Every
+     component references bg-accent / text-accent / border-accent / ring-accent
+     instead of the raw hex. In Tailwind v4 these @theme tokens are real CSS
+     custom properties, so overriding --color-accent at runtime (see
+     applyTheme.js) updates every one of those utility classes with no
+     per-component changes and no tailwind.config.js to touch. */
+  --color-accent: var(--store-accent, #cfff04);
+  --color-accent-dark: #a8d400; /* hover/active shade — not yet per-theme, see note below */
   --color-accent-ink: #1a2400;  /* near-black text/icon color to sit on top of the accent bg */
 }
+
+/*
+  Known limitation: --color-accent-dark and --color-accent-ink stay fixed
+  regardless of the chosen accentColor, since store_themes has no matching
+  fields for them and deriving readable shades/contrast automatically is a
+  bigger piece of work than this fix covers. An unusual accent color can
+  therefore look slightly off on hover states / accent-ink text until that's
+  addressed separately.
+*/
 
 @keyframes marquee-left {
   from { transform: translateX(0); }

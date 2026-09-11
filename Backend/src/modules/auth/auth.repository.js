@@ -5,7 +5,7 @@ const userSelect = `SELECT u.id, u.business_id AS tenantId, u.email, u.first_nam
 export const authRepository = {
   async findByEmail(email, tenantIdOrConnection = pool) {
     const scoped = typeof tenantIdOrConnection === 'number' || typeof tenantIdOrConnection === 'string';
-    const connection = scoped ? pool : tenantIdOrConnection;
+    const connection = scoped ? pool : (tenantIdOrConnection ?? pool);
     const [rows] = await connection.execute(`${userSelect} WHERE u.email = ?${scoped ? ' AND u.business_id = ?' : ''} LIMIT 1`, scoped ? [email, tenantIdOrConnection] : [email]);
     return rows[0] || null;
   },

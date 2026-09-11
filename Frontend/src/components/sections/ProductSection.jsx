@@ -2,26 +2,34 @@ import { LuSparkles } from "react-icons/lu";
 import { useEffect, useState } from "react";
 import SampleProduct from "../SampleProduct";
 import SectionHeader from "../SectionHeader";
-import { products } from "../../data/products";
 import { api } from "../../api/commerceApi";
-
+import { toDisplayProducts } from "../../utils/productDisplay";
 
 const ProductSection = () => {
   const [visibleProducts, setVisibleProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    api.publicProducts().then((items) => {
-      if (!active) return;
-      setVisibleProducts(items.map((item, index) => {
-        const presentation = products.find((product) => product.slug === item.slug) || products[index % products.length];
-        const regularPrice = Number(item.price).toFixed(2);
-        const salePrice = item.salePrice === null || item.salePrice === undefined ? null : Number(item.salePrice).toFixed(2);
-        return { ...presentation, slug: item.slug, title: item.name, description: item.description, price: `$${salePrice || regularPrice}`, discount: salePrice ? `$${regularPrice}` : "" };
-      }));
-    }).catch(() => { if (active) setVisibleProducts([]); });
-    return () => { active = false; };
+    setLoading(true);
+    api
+      .publicProducts()
+      .then((items) => {
+        if (!active) return;
+        setVisibleProducts(toDisplayProducts(items));
+      })
+      .catch(() => {
+        if (active) setVisibleProducts([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
+
+  if (!loading && visibleProducts.length === 0) return null;
 
   return (
     <section className="bg-[#f8f8f8] px-5 py-12 sm:px-8 sm:py-14 md:px-12 lg:px-20 xl:px-28">
@@ -38,17 +46,28 @@ const ProductSection = () => {
           ctaLink="/collections"
         />
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleProducts.slice(0, 3).map((product, index) => (
-            <SampleProduct key={index} {...product} />
-          ))}
-
-          <div className="hidden sm:contents">
-            {visibleProducts.slice(3).map((product, index) => (
-              <SampleProduct key={index + 3} {...product} />
+        {loading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="aspect-4/5 animate-pulse rounded-3xl bg-[#ededed]"
+              />
             ))}
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleProducts.slice(0, 3).map((product) => (
+              <SampleProduct key={product.slug} {...product} />
+            ))}
+
+            <div className="hidden sm:contents">
+              {visibleProducts.slice(3).map((product) => (
+                <SampleProduct key={product.slug} {...product} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
