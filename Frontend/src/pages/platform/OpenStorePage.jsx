@@ -50,6 +50,7 @@ const COUNTRY_OPTIONS = [
 const FALLBACK_TEMPLATES = [
   { id: "classic", label: "Classic", description: "A bold, image-led storefront with a floating navigation bar.", previewImage: "/template-previews/classic-storefront.svg" },
   { id: "editorial", label: "Editorial", description: "A refined magazine-style storefront with serif typography and warm surfaces.", previewImage: "/template-previews/editorial-storefront.svg" },
+  { id: "luxe", label: "Luxe", description: "A quiet-luxury fashion storefront with a promo utility bar and a bento-style new-arrivals grid.", previewImage: "/template-previews/luxe-storefront.svg" },
 ];
 
 const FIELDS = [

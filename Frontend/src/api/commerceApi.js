@@ -113,6 +113,15 @@ export const api = {
   updateTheme: async (input) =>
     data(await apiClient.patch("/settings/theme", input)),
 
+  layoutTemplates: async () =>
+    data(await apiClient.get("/settings/layout-templates")),
+
+  publicLayoutTemplate: async () =>
+    data(await apiClient.get("/settings/template/public")),
+
+  updateLayoutTemplate: async (input) =>
+    data(await apiClient.patch("/settings/layout-template", input)),
+
   domains: async () =>
     data(await apiClient.get("/domains")),
 

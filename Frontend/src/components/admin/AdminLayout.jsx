@@ -20,6 +20,7 @@ import {
 import { logout } from "../../api/authApi";
 import { sessionCleared } from "../../features/auth/authSlice";
 import { useTenant } from "../TenantProvider";
+import TemplateChoicePopup from "./TemplateChoicePopup";
 
 const isOwner = (user) => user?.roleName === "Owner";
 
@@ -142,6 +143,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-[#fafaf9]">
+      {isOwner(auth.user) && <TemplateChoicePopup />}
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
         <SidebarContent user={auth.user} items={items} />

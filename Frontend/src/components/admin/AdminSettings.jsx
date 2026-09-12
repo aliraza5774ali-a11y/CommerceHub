@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Check, Loader2, RefreshCw, Settings as SettingsIcon } from "lucide-react";
 import { api } from "../../api/commerceApi";
-import { themeOptions } from "../../api/authApi";
 import { getApiErrorMessage } from "../../api/apiError";
 import SectionHeader from "../SectionHeader";
 import { useTenant } from "../TenantProvider";
@@ -39,27 +38,23 @@ function SettingValue({ value }) {
   return <span className="font-price text-sm text-black/85">{displayValue(value)}</span>;
 }
 
-function ThemeSection({ theme, onApplied, onTemplateChanged }) {
+function LayoutTemplateSection({ layoutTemplate, onApplied, onTemplateChanged }) {
   const [templates, setTemplates] = useState([]);
   const [applyingId, setApplyingId] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    themeOptions()
+    api
+      .layoutTemplates()
       .then((options) => setTemplates(Array.isArray(options) ? options : []))
       .catch(() => setTemplates([]));
   }, []);
-
-  const currentId = theme?.templateId || null;
 
   const apply = async (template) => {
     setApplyingId(template.id);
     setError("");
     try {
-      await api.updateTheme({
-        version: theme?.version,
-        templateId: template.id,
-      });
+      await api.updateLayoutTemplate({ layoutTemplate: template.id });
       await onTemplateChanged();
       onApplied();
     } catch (e) {
@@ -78,12 +73,13 @@ function ThemeSection({ theme, onApplied, onTemplateChanged }) {
         Store template
       </h3>
       <p className="mt-1.5 text-sm text-black/50">
-        Switch between the two storefront layouts. Your homepage, pages and footer content stay exactly as you edit them in CMS.
+        Switch between full storefront designs — different layout, sections and typography for
+        each. Your homepage, pages and footer content (edited in CMS) carry over exactly as-is.
       </p>
 
       <div className="mt-5 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
         {templates.map((template) => {
-          const selected = currentId === template.id;
+          const selected = layoutTemplate === template.id;
           const busy = applyingId === template.id;
           return (
             <button
@@ -148,7 +144,11 @@ export default function AdminSettings() {
 
   const entries = useMemo(() => {
     if (!state.data || typeof state.data !== "object") return [];
-    return Object.entries(state.data).filter(([, v]) => typeof v !== "object" || v === null || Array.isArray(v));
+    // theme/layoutTemplate/layoutTemplateChosen already have dedicated UI
+    // above (or, for theme, are deliberately not shown — see LayoutTemplateSection).
+    return Object.entries(state.data).filter(
+      ([k, v]) => !["theme", "layoutTemplate", "layoutTemplateChosen"].includes(k) && (typeof v !== "object" || v === null || Array.isArray(v))
+    );
   }, [state.data]);
 
   const nestedGroups = useMemo(() => {
@@ -172,7 +172,7 @@ export default function AdminSettings() {
 
       {state.loading && <SettingsSkeleton />}
 
-      {!state.loading && !state.error && <ThemeSection theme={state.data?.theme} onApplied={refresh} onTemplateChanged={refreshTenant} />}
+      {!state.loading && !state.error && <LayoutTemplateSection layoutTemplate={state.data?.layoutTemplate} onApplied={refresh} onTemplateChanged={refreshTenant} />}
 
       {!state.loading && state.error && (
         <div className="flex flex-col items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-6">

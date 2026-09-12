@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@400;500;600&display=swap');
+
+.editorial-theme {
+  --paper: #f8f6ee;
+  --paper-dim: #efece0;
+  --forest: #1d3b2d;
+  --forest-dark: #142a20;
+  --coral: #a95f3d;
+  --gold: #dfb35c;
+  background: var(--paper);
+  color: var(--forest);
+  font-family: "Jost", "Poppins", sans-serif;
+}
+.editorial-theme .editorial-display {
+  font-family: "Playfair Display", Georgia, serif;
+}
+.editorial-scrollbar { scrollbar-width: thin; scrollbar-color: var(--coral) transparent; }
+.editorial-scrollbar::-webkit-scrollbar { height: 6px; }
+.editorial-scrollbar::-webkit-scrollbar-thumb { background: var(--coral); border-radius: 99px; }
+
+/* Pill CTA used across hero, banners, product cards */
+.editorial-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  padding: .7rem 1.4rem;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  font-weight: 600;
+  transition: all .2s ease;
+}
+.editorial-pill-gold { background: var(--gold); color: var(--forest-dark); }
+.editorial-pill-gold:hover { background: #ecc36f; }
+.editorial-pill-outline { border: 1px solid currentColor; }
+.editorial-pill-outline:hover { background: currentColor; }
+
+.editorial-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: .25rem .8rem;
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 600;
+}
+
+.editorial-arrow-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(29,59,45,.25);
+  color: var(--forest);
+  background: var(--paper);
+  transition: all .2s ease;
+  flex-shrink: 0;
+}
+.editorial-arrow-btn:hover { background: var(--forest); color: var(--paper); border-color: var(--forest); }
+.editorial-arrow-btn:disabled { opacity: .35; cursor: not-allowed; }
+.editorial-arrow-btn:disabled:hover { background: var(--paper); color: var(--forest); }

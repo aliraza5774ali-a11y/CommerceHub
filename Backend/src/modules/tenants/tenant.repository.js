@@ -1,6 +1,6 @@
 import { pool } from '../../database/connection.js';
 
-const fields = 'id, name, slug, niche, theme_id AS themeId, status, settings, created_at AS createdAt, updated_at AS updatedAt';
+const fields = 'id, name, slug, niche, theme_id AS themeId, layout_template AS layoutTemplate, layout_template_selected_at AS layoutTemplateSelectedAt, status, settings, created_at AS createdAt, updated_at AS updatedAt';
 
 export const tenantRepository = {
   async list(connection = pool) {
@@ -24,6 +24,10 @@ export const tenantRepository = {
   },
   async updateThemeId(id, themeId, connection = pool) {
     const [result] = await connection.execute('UPDATE businesses SET theme_id = ? WHERE id = ?', [themeId, id]);
+    return result.affectedRows > 0 ? this.findById(id, connection) : null;
+  },
+  async updateLayoutTemplate(id, layoutTemplate, connection = pool) {
+    const [result] = await connection.execute('UPDATE businesses SET layout_template = ?, layout_template_selected_at = CURRENT_TIMESTAMP WHERE id = ?', [layoutTemplate, id]);
     return result.affectedRows > 0 ? this.findById(id, connection) : null;
   }
 };
