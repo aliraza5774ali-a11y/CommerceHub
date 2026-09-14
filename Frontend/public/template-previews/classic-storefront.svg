@@ -1,1 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title"><title id="title">Classic storefront preview</title><defs><linearGradient id="hero" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#263447"/><stop offset="1" stop-color="#be7a55"/></linearGradient></defs><rect width="720" height="900" fill="#fafaf9"/><rect x="28" y="25" width="664" height="48" rx="24" fill="#ffffff"/><text x="55" y="56" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#111827">NORTH STUDIO</text><text x="445" y="55" font-family="Arial,sans-serif" font-size="11" fill="#475569">SHOP   JOURNAL   ABOUT</text><rect x="28" y="92" width="664" height="390" rx="16" fill="url(#hero)"/><circle cx="540" cy="235" r="112" fill="#d9bda5" opacity=".8"/><path d="M440 392c18-135 58-198 112-198s85 63 105 198" fill="#111827" opacity=".65"/><text x="65" y="244" font-family="Arial,sans-serif" font-size="14" font-weight="700" letter-spacing="3" fill="#d6ff34">NEW COLLECTION</text><text x="65" y="300" font-family="Arial,sans-serif" font-size="50" font-weight="700" fill="white">Made for<br/>everyday.</text><rect x="65" y="350" width="135" height="42" rx="21" fill="#cfff04"/><text x="88" y="376" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#111827">SHOP NOW</text><text x="30" y="535" font-family="Arial,sans-serif" font-size="24" font-weight="700" fill="#111827">New arrivals</text><rect x="28" y="560" width="205" height="240" rx="12" fill="#dfb890"/><rect x="257" y="560" width="205" height="240" rx="12" fill="#8fa5a0"/><rect x="486" y="560" width="206" height="240" rx="12" fill="#d2c5b5"/><rect x="30" y="825" width="660" height="2" fill="#111827" opacity=".15"/><text x="30" y="858" font-family="Arial,sans-serif" font-size="12" fill="#64748b">CURATED ESSENTIALS · FREE DELIVERY OVER $150</text></svg>
+<svg viewBox="0 0 480 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="480" height="600" fill="#ffffff"/>
+  <rect width="480" height="46" fill="#ffffff"/>
+  <line x1="0" y1="46" x2="480" y2="46" stroke="#e5e5e5" stroke-width="1"/>
+  <circle cx="30" cy="23" r="3" fill="#111827"/>
+  <text x="240" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#111827">STORE</text>
+  <rect x="410" y="16" width="16" height="16" rx="3" fill="#cfff04"/>
+  <rect x="0" y="46" width="480" height="230" fill="#111827"/>
+  <text x="40" y="130" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#ffffff">Crafted for those</text>
+  <text x="40" y="165" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#ffffff">who refuse</text>
+  <text x="40" y="200" font-family="Arial, sans-serif" font-size="30" font-weight="800" fill="#cfff04">ordinary</text>
+  <rect x="40" y="225" width="120" height="30" rx="15" fill="#cfff04"/>
+  <text x="100" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#111827">Shop Now</text>
+  <g>
+    <rect x="30" y="300" width="120" height="150" rx="8" fill="#f3f3f3"/>
+    <rect x="160" y="300" width="120" height="150" rx="8" fill="#f3f3f3"/>
+    <rect x="290" y="300" width="120" height="150" rx="8" fill="#f3f3f3"/>
+    <rect x="30" y="460" width="120" height="10" rx="3" fill="#d4d4d4"/>
+    <rect x="160" y="460" width="120" height="10" rx="3" fill="#d4d4d4"/>
+    <rect x="290" y="460" width="120" height="10" rx="3" fill="#d4d4d4"/>
+  </g>
+  <rect x="0" y="520" width="480" height="80" fill="#111827"/>
+  <text x="40" y="555" font-family="Arial, sans-serif" font-size="16" font-weight="800" fill="#ffffff">STORE</text>
+  <text x="40" y="578" font-family="Arial, sans-serif" font-size="9" fill="#9ca3af">Clean grid-based storefront</text>
+</svg>

@@ -32,6 +32,14 @@ settingsRoutes.get('/template/public', resolveTenant, asyncHandler(async (req, r
   return success(res, await settingsService.getPublicLayoutTemplate(req.tenant.id));
 }));
 
+// Store name/email/phone only — for the storefront Contact page. Never the
+// full settings object (order/shipping/checkout config etc.), and no login
+// required, same reasoning as theme/public and template/public above.
+settingsRoutes.get('/contact/public', resolveTenant, asyncHandler(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  return success(res, await settingsService.getPublicContact(req.tenant.id));
+}));
+
 // The catalog of available layout templates (id/label/description/preview),
 // for the signup picker, the admin switcher, and the first-login popup.
 // Static and public — no tenant context needed.

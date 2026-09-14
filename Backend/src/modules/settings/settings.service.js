@@ -21,6 +21,13 @@ export const settingsService = {
     const tenant = await tenantRepository.findById(tenantId);
     return { layoutTemplate: resolveLayoutTemplateId(tenant?.layoutTemplate) };
   },
+  // Storefront-facing: just enough for a Contact page to show real info,
+  // never the full settings object. No login required, same reasoning as
+  // getPublicTheme/getPublicLayoutTemplate above.
+  async getPublicContact(tenantId) {
+    const settings = await settingsRepository.ensure(tenantId);
+    return { storeName: settings.storeName, storeEmail: settings.storeEmail, storePhone: settings.storePhone };
+  },
   getLayoutTemplates() { return LAYOUT_TEMPLATE_OPTIONS; },
   async updateLayoutTemplate(tenantId, userId, input) {
     const layoutTemplate = resolveLayoutTemplateId(input.layoutTemplate);

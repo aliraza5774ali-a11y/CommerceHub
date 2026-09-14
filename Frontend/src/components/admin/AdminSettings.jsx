@@ -77,7 +77,7 @@ function LayoutTemplateSection({ layoutTemplate, onApplied, onTemplateChanged })
         each. Your homepage, pages and footer content (edited in CMS) carry over exactly as-is.
       </p>
 
-      <div className="mt-5 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="mt-5 -mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
         {templates.map((template) => {
           const selected = layoutTemplate === template.id;
           const busy = applyingId === template.id;
@@ -86,35 +86,38 @@ function LayoutTemplateSection({ layoutTemplate, onApplied, onTemplateChanged })
               key={template.id}
               onClick={() => apply(template)}
               disabled={applyingId !== null}
-              className={`flex flex-col gap-2.5 rounded-2xl border p-3 text-left transition-all duration-200 disabled:opacity-60 ${
-                selected ? "border-black shadow-sm" : "border-black/10 hover:border-black/25"
+              className={`group relative aspect-[4/5] w-[180px] shrink-0 snap-start overflow-hidden rounded-2xl border transition-all duration-200 disabled:opacity-60 sm:w-[200px] ${
+                selected ? "border-black shadow-md" : "border-black/10 hover:border-black/30"
               }`}
             >
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#f2f2f2]">
-                <img
-                  src={template.previewImage}
-                  alt={`${template.label} template preview`}
-                  className="h-full w-full object-cover"
-                />
-                {busy && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-                    <Loader2 size={16} className="animate-spin text-black/60" />
-                  </div>
-                )}
+              <img
+                src={template.previewImage}
+                alt={`${template.label} template preview`}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent px-3 pb-2.5 pt-10 text-left">
+                <span className="text-sm font-semibold text-white">{template.label}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-black">{template.label}</span>
-                {selected && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-black">
-                    <Check size={10} strokeWidth={3} />
-                  </span>
-                )}
-              </div>
-              <p className="-mt-1 text-xs leading-relaxed text-black/50">{template.description}</p>
+              {selected && (
+                <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-black">
+                  <Check size={11} strokeWidth={3} />
+                </span>
+              )}
+              {busy && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                  <Loader2 size={18} className="animate-spin text-black/60" />
+                </div>
+              )}
             </button>
           );
         })}
       </div>
+
+      {layoutTemplate && (
+        <p className="mt-3 text-xs leading-relaxed text-black/50">
+          {templates.find((t) => t.id === layoutTemplate)?.description}
+        </p>
+      )}
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
     </div>

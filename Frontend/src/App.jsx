@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import ScrollToTop from "./components/ScrollToTop";
 import { TenantProvider, useTenant } from "./components/TenantProvider";
 import { me, persistSession } from "./api/authApi";
@@ -23,8 +23,67 @@ function TenantRoutes() { const { isPlatform, loading, error } = useTenant();
   const template = resolveTemplate(activeTemplateId);
   const { Home, Shops, Collection, About, Contact, Blog, ProductDetails } = template.pages;
   const StorefrontLayout = template.layout;
+
+  // Memoized (empty deps — these routes never depend on the active storefront
+  // template) so switching templates in Admin > Settings doesn't force React
+  // to re-render the admin/account/auth route subtree. Without this, every
+  // component reading useTenant()/useActiveTemplate() re-renders when
+  // layoutTemplate changes — including this component — and since the admin
+  // routes were declared inline in the same JSX return, React re-rendered
+  // AdminLayout/AdminSettings too, even though they have nothing to do with
+  // the storefront template. A stable (===) element reference here makes
+  // React bail out of reconciling this subtree entirely on those re-renders.
+  const nonStorefrontRoutes = useMemo(() => (
+    <>
+      <Route path="/login" element={<AuthPage mode="login"/>}/>
+      <Route path="/register" element={<AuthPage mode="register"/>}/>
+      <Route element={<RequireAuth/>}>
+        <Route path="/account" element={<AccountLayout/>}>
+          <Route index element={<AccountOrders/>}/>
+          <Route path="wishlist" element={<AccountWishlist/>}/>
+          <Route path="cart" element={<AccountCart/>}/>
+          <Route path="profile" element={<AccountProfile/>}/>
+        </Route>
+      </Route>
+      <Route element={<RequireAuth admin/>}>
+        <Route path="/admin" element={<AdminLayout/>}>
+          <Route index element={<AdminOverview/>}/>
+          <Route path="products" element={<AdminProducts/>}/>
+          <Route path="homepage" element={<AdminHomepage/>}/>
+          <Route path="pages" element={<AdminPagesList/>}/>
+          <Route path="pages/:slug" element={<AdminPageEditor/>}/>
+          <Route path="footer" element={<AdminFooter/>}/>
+          <Route path="categories" element={<AdminCategories/>}/>
+          <Route path="inventory" element={<AdminInventory/>}/>
+          <Route path="orders" element={<AdminOrders/>}/>
+          <Route path="customers" element={<AdminCustomers/>}/>
+          <Route element={<RequireAuth admin owner/>}>
+            <Route path="domains" element={<AdminDomains/>}/>
+            <Route path="settings" element={<AdminSettings/>}/>
+          </Route>
+        </Route>
+      </Route>
+    </>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), []);
+
   if (!isPlatform && (loading || error)) return <TenantUnavailable />;
   if (isPlatform) return <Routes><Route path="/" element={<PlatformHome/>}/><Route path="/open-store" element={<OpenStore/>}/><Route path="/login" element={<PlatformLoginPage/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>;
-  return <Routes><Route element={<StorefrontLayout/>}><Route path="/" element={<Home/>}/><Route path="/about" element={<About/>}/><Route path="/shops" element={<Shops/>}/><Route path="/shop/:slug" element={<ProductDetails/>}/><Route path="/collections" element={<Collection/>}/><Route path="/blog" element={<Blog/>}/><Route path="/contact" element={<Contact/>}/><Route path="/cart" element={<AccountCart/>}/></Route><Route path="/login" element={<AuthPage mode="login"/>}/><Route path="/register" element={<AuthPage mode="register"/>}/><Route element={<RequireAuth/>}><Route path="/account" element={<AccountLayout/>}><Route index element={<AccountOrders/>}/><Route path="wishlist" element={<AccountWishlist/>}/><Route path="cart" element={<AccountCart/>}/><Route path="profile" element={<AccountProfile/>}/></Route></Route><Route element={<RequireAuth admin/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminOverview/>}/><Route path="products" element={<AdminProducts/>}/><Route path="homepage" element={<AdminHomepage/>}/><Route path="pages" element={<AdminPagesList/>}/><Route path="pages/:slug" element={<AdminPageEditor/>}/><Route path="footer" element={<AdminFooter/>}/><Route path="categories" element={<AdminCategories/>}/><Route path="inventory" element={<AdminInventory/>}/><Route path="orders" element={<AdminOrders/>}/><Route path="customers" element={<AdminCustomers/>}/><Route element={<RequireAuth admin owner/>}><Route path="domains" element={<AdminDomains/>}/><Route path="settings" element={<AdminSettings/>}/></Route></Route></Route><Route path="*" element={<Navigate to="/" replace/>}/></Routes>;
+  return (
+    <Routes>
+      <Route element={<StorefrontLayout/>}>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/about" element={<About/>}/>
+        <Route path="/shops" element={<Shops/>}/>
+        <Route path="/shop/:slug" element={<ProductDetails/>}/>
+        <Route path="/collections" element={<Collection/>}/>
+        <Route path="/blog" element={<Blog/>}/>
+        <Route path="/contact" element={<Contact/>}/>
+        <Route path="/cart" element={<AccountCart/>}/>
+      </Route>
+      {nonStorefrontRoutes}
+      <Route path="*" element={<Navigate to="/" replace/>}/>
+    </Routes>
+  );
 }
 export default function App() { return <BrowserRouter><SessionBootstrap><TenantProvider><ScrollToTop/><TenantRoutes/></TenantProvider></SessionBootstrap></BrowserRouter>; }

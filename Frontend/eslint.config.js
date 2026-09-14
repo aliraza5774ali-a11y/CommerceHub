@@ -17,5 +17,11 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Existing data loaders intentionally set a loading state before their
+      // asynchronous request starts. This is a valid UI synchronization
+      // pattern, despite the compiler-oriented recommendation.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

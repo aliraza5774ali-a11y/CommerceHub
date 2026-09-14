@@ -166,7 +166,6 @@ export default function AdminHomepage() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   const sections = (state.page?.sections || []).slice().sort((a, b) => a.position - b.position);

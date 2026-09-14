@@ -1,11 +1,11 @@
-import ClassicMainLayout from "../components/layout/MainLayout";
-import ClassicHome from "../pages/Home";
-import ClassicShops from "../pages/Shops";
-import ClassicCollection from "../pages/Collection";
-import ClassicAbout from "../pages/About";
-import ClassicContact from "../pages/Contact";
-import ClassicBlog from "../pages/Blog";
-import ClassicProductDetails from "../pages/ProductDetails";
+import ClassicMainLayout from "./classic/layout/MainLayout";
+import ClassicHome from "./classic/pages/Home";
+import ClassicShops from "./classic/pages/Shops";
+import ClassicCollection from "./classic/pages/Collection";
+import ClassicAbout from "./classic/pages/About";
+import ClassicContact from "./classic/pages/Contact";
+import ClassicBlog from "./classic/pages/Blog";
+import ClassicProductDetails from "./classic/pages/ProductDetails";
 
 import EditorialMainLayout from "./editorial/layout/MainLayout";
 import EditorialHome from "./editorial/pages/Home";
@@ -24,6 +24,24 @@ import LuxeAbout from "./luxe/pages/About";
 import LuxeContact from "./luxe/pages/Contact";
 import LuxeBlog from "./luxe/pages/Blog";
 import LuxeProductDetails from "./luxe/pages/ProductDetails";
+
+import VibrantMainLayout from "./vibrant/layout/MainLayout";
+import VibrantHome from "./vibrant/pages/Home";
+import VibrantShops from "./vibrant/pages/Shops";
+import VibrantCollection from "./vibrant/pages/Collection";
+import VibrantAbout from "./vibrant/pages/About";
+import VibrantContact from "./vibrant/pages/Contact";
+import VibrantBlog from "./vibrant/pages/Blog";
+import VibrantProductDetails from "./vibrant/pages/ProductDetails";
+
+import TexartMainLayout from "./texart/layout/MainLayout";
+import TexartHome from "./texart/pages/Home";
+import TexartShops from "./texart/pages/Shops";
+import TexartCollection from "./texart/pages/Collection";
+import TexartAbout from "./texart/pages/About";
+import TexartContact from "./texart/pages/Contact";
+import TexartBlog from "./texart/pages/Blog";
+import TexartProductDetails from "./texart/pages/ProductDetails";
 
 // Each template must provide the same page keys, since App.jsx's storefront
 // routes are keyed off this shape — Home/Shops/Collection/About/Contact/Blog/
@@ -48,11 +66,6 @@ export const TEMPLATES = {
     layout: EditorialMainLayout,
     pages: {
       Home: EditorialHome,
-      // Not yet built with bespoke Editorial designs (Codex's pass only
-      // covered the homepage sections) — reuse Classic's page logic so the
-      // rest of the storefront still works end-to-end inside the Editorial
-      // shell (its Navbar/Footer/typography). Swap these for real Editorial
-      // pages as they're built; see TEMPLATES.md.
       Shops: EditorialShops,
       Collection: EditorialCollection,
       About: EditorialAbout,
@@ -72,6 +85,32 @@ export const TEMPLATES = {
       Contact: LuxeContact,
       Blog: LuxeBlog,
       ProductDetails: LuxeProductDetails,
+    },
+  },
+  vibrant: {
+    label: "Vibrant",
+    layout: VibrantMainLayout,
+    pages: {
+      Home: VibrantHome,
+      Shops: VibrantShops,
+      Collection: VibrantCollection,
+      About: VibrantAbout,
+      Contact: VibrantContact,
+      Blog: VibrantBlog,
+      ProductDetails: VibrantProductDetails,
+    },
+  },
+  texart: {
+    label: "Texart",
+    layout: TexartMainLayout,
+    pages: {
+      Home: TexartHome,
+      Shops: TexartShops,
+      Collection: TexartCollection,
+      About: TexartAbout,
+      Contact: TexartContact,
+      Blog: TexartBlog,
+      ProductDetails: TexartProductDetails,
     },
   },
 };

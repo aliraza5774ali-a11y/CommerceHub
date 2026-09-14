@@ -51,6 +51,8 @@ const FALLBACK_TEMPLATES = [
   { id: "classic", label: "Classic", description: "A bold, image-led storefront with a floating navigation bar.", previewImage: "/template-previews/classic-storefront.svg" },
   { id: "editorial", label: "Editorial", description: "A refined magazine-style storefront with serif typography and warm surfaces.", previewImage: "/template-previews/editorial-storefront.svg" },
   { id: "luxe", label: "Luxe", description: "A quiet-luxury fashion storefront with a promo utility bar and a bento-style new-arrivals grid.", previewImage: "/template-previews/luxe-storefront.svg" },
+  { id: "vibrant", label: "Vibrant", description: "A bold, high-energy storefront with a pill navbar, bento categories, and a giant wordmark feature banner.", previewImage: "/template-previews/vibrant-storefront.svg" },
+  { id: "texart", label: "Texart", description: "A playful lime-and-violet fashion storefront with a marquee strip, countdown banner, and step-by-step process section.", previewImage: "/template-previews/texart-storefront.svg" },
 ];
 
 const FIELDS = [
@@ -133,7 +135,7 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 [scrollbar-width:thin]">
         {templates.map((template) => {
           const isSelected = selected === template.id;
           return (
@@ -141,30 +143,33 @@ function TemplateStep({ templates, selected, onSelect, onBack, onSubmit, submitt
               type="button"
               key={template.id}
               onClick={() => onSelect(template.id)}
-              className={`flex flex-col gap-3 rounded-2xl border p-3 text-left transition-all duration-200 ${
-                isSelected ? "border-black shadow-sm" : "border-black/10 hover:border-black/25"
+              className={`group relative aspect-[4/5] w-[150px] shrink-0 snap-start overflow-hidden rounded-2xl border transition-all duration-200 sm:w-[170px] ${
+                isSelected ? "border-black shadow-md" : "border-black/10 hover:border-black/30"
               }`}
             >
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-[#f2f2f2]">
-                <img
-                  src={template.previewImage}
-                  alt={`${template.label} template preview`}
-                  className="h-full w-full object-cover"
-                />
+              <img
+                src={template.previewImage}
+                alt={`${template.label} template preview`}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent px-3 pb-2.5 pt-8">
+                <span className="text-[13px] font-semibold text-white">{template.label}</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium text-black">{template.label}</span>
-                {isSelected && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-black">
-                    <CheckCircle2 size={12} strokeWidth={2.5} />
-                  </span>
-                )}
-              </div>
-              <p className="-mt-1 text-xs leading-relaxed text-black/45">{template.description}</p>
+              {isSelected && (
+                <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-black">
+                  <CheckCircle2 size={12} strokeWidth={2.5} />
+                </span>
+              )}
             </button>
           );
         })}
       </div>
+
+      {selected && (
+        <p className="text-xs leading-relaxed text-black/45">
+          {templates.find((t) => t.id === selected)?.description}
+        </p>
+      )}
 
       {error && (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

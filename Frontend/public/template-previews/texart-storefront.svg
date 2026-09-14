@@ -1,0 +1,23 @@
+<svg viewBox="0 0 480 600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="480" height="600" fill="#fbfbf5"/>
+  <rect width="480" height="240" fill="#d4f34a"/>
+  <text x="240" y="30" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="15" fill="#14170f">Texart</text>
+  <text x="40" y="90" font-family="Arial, sans-serif" font-size="10" letter-spacing="2" fill="#14170f99">CHECK, REIMAGINED — 2026</text>
+  <text x="40" y="135" font-family="Georgia, serif" font-weight="700" font-size="27" fill="#14170f">Checks that speak</text>
+  <text x="40" y="170" font-family="Georgia, serif" font-weight="700" font-style="italic" font-size="27" fill="#14170f">before</text>
+  <text x="40" y="205" font-family="Georgia, serif" font-weight="700" font-size="27" fill="#14170f">you do.</text>
+  <circle cx="410" cy="90" r="42" fill="#ffffff" transform="rotate(-12 410 90)"/>
+  <text x="410" y="94" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="700" fill="#14170f" transform="rotate(-12 410 90)">SHIRTS 2026</text>
+  <rect x="0" y="240" width="480" height="26" fill="#fbfbf5"/>
+  <line x1="0" y1="240" x2="480" y2="240" stroke="#14170f22"/>
+  <line x1="0" y1="266" x2="480" y2="266" stroke="#14170f22"/>
+  <text x="20" y="257" font-family="Arial, sans-serif" font-size="9" letter-spacing="2" fill="#14170f99">MADE TO LAST · NOT YOUR AVERAGE CHECK SHIRT ·</text>
+  <g>
+    <rect x="30" y="300" width="130" height="150" rx="14" fill="#cdbdf7"/>
+    <rect x="175" y="300" width="130" height="150" rx="14" fill="#f2f0e4"/>
+    <rect x="320" y="300" width="130" height="150" rx="14" fill="#f2f0e4"/>
+  </g>
+  <rect x="0" y="520" width="480" height="80" fill="#14170f"/>
+  <text x="40" y="558" font-family="Georgia, serif" font-weight="700" font-size="16" fill="#d4f34a">Texart</text>
+  <text x="40" y="578" font-family="Arial, sans-serif" font-size="9" fill="#fbfbf599">Playful print-forward storefront</text>
+</svg>

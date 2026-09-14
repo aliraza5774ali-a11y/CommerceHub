@@ -2,21 +2,36 @@
 // and typography, not just colors. Deliberately a separate concept/module
 // from theme.presets.js (color/font presets), which a tenant picks
 // independently within whichever layout template is active.
+//
+// previewImage now points at real static SVG mockups of each template's
+// actual layout (served from /public/template-previews/), not a generic
+// color-swatch placeholder. See README-template-previews.md for how to
+// replace these with real screenshots later.
 export const LAYOUT_TEMPLATES = {
   classic: {
     label: 'Classic',
-    description: 'Clean grid-based storefront — the original CommerceHub layout.',
-    previewImage: 'https://placehold.co/480x600/ffffff/111827?text=Classic+Layout'
+    description: 'A bold, image-led storefront with a floating navigation bar.',
+    previewImage: '/template-previews/classic-storefront.svg'
   },
   editorial: {
     label: 'Editorial',
-    description: 'Warm, magazine-style storefront with a horizontal product gallery, testimonial carousel, and photo-collage story section.',
-    previewImage: 'https://placehold.co/480x600/f7f6ef/1d3b2d?text=Editorial+Layout'
+    description: 'A refined magazine-style storefront with serif typography and warm surfaces.',
+    previewImage: '/template-previews/editorial-storefront.svg'
   },
   luxe: {
     label: 'Luxe',
-    description: 'Quiet-luxury fashion storefront with a promo utility bar, circular category shortcuts, a bento-style new-arrivals grid, and a members newsletter panel.',
-    previewImage: 'https://placehold.co/480x600/efe7db/141110?text=Luxe+Layout'
+    description: 'A quiet-luxury fashion storefront with a promo utility bar and a bento-style new-arrivals grid.',
+    previewImage: '/template-previews/luxe-storefront.svg'
+  },
+  vibrant: {
+    label: 'Vibrant',
+    description: 'A bold, high-energy storefront with a pill navbar, bento categories, and a giant wordmark feature banner.',
+    previewImage: '/template-previews/vibrant-storefront.svg'
+  },
+  texart: {
+    label: 'Texart',
+    description: 'A playful lime-and-violet fashion storefront with a marquee strip, countdown banner, and step-by-step process section.',
+    previewImage: '/template-previews/texart-storefront.svg'
   }
 };
 

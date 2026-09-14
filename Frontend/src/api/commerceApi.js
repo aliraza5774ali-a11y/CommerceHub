@@ -9,6 +9,9 @@ export const api = {
   publicTheme: async () =>
     data(await apiClient.get("/settings/theme/public")),
 
+  publicContact: async () =>
+    data(await apiClient.get("/settings/contact/public")),
+
   publicProducts: async () =>
     data(await apiClient.get("/catalog/public/products")),
 
